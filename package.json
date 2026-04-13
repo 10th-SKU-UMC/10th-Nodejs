@@ -1,0 +1,18 @@
+{
+  "name": "10th-umc-nodejs",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "> 10th 서경대 **UMC Node.js 파트 Repository** 입니다.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "dev": "nodemon --exec node src/index.js"
+    
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
