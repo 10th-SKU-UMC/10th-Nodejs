@@ -4,6 +4,8 @@ import cors from "cors";
 import { handleUserSignUp } from "./modules/users/controllers/user.controller";
 import storeRouter from "./modules/stores/store.route";
 import reviewRouter from "./modules/reviews/review.route";
+import missionRouter from "./modules/missions/mission.route";
+import userMissionRouter from "./modules/user_missions/user_mission.route";
 
 // 1. 환경 변수 설정
 dotenv.config();
@@ -25,6 +27,8 @@ app.get("/", (req: Request, res: Response) => {
 app.post("/api/v1/users/signup", handleUserSignUp);
 app.use("/api/v1", storeRouter);
 app.use("/api/v1", reviewRouter);
+app.use("/api/v1", missionRouter);
+app.use("/api/v1", userMissionRouter);
 
 // 4. 서버 시작
 app.listen(port, () => {
