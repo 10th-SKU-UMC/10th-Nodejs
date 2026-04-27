@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { UserSignUpRequest, responseFromUser } from "../dtos/user.dto.js";
 import {
   addUser,
@@ -7,8 +8,11 @@ import {
 } from "../repositories/user.repository.js";
 
 export const userSignUp = async (data: any) => {
+  const hn = 10;
+  const h_password = await bcrypt.hash(data.password, hn);
+
   // 1. 유저 정보 저장
-  const joinUserId = await addUser(data);
+  const joinUserId = await addUser({ ...data, password: h_password });
 
   if (joinUserId === null) {
     throw new Error("이미 존재하는 이메일입니다.");

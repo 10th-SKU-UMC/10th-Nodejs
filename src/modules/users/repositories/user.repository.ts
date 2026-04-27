@@ -12,9 +12,10 @@ export const addUser = async (data: any): Promise<number | null> => {
     if (confirm[0]?.isExistEmail) return null;
 
     const [result] = await conn.query<ResultSetHeader>(
-      `INSERT INTO user (email, name, gender, birth, address, detail_address, phone_number) VALUES (?, ?, ?, ?, ?, ?, ?);`,
+      `INSERT INTO user (email, password, name, gender, birth, address, detail_address, phone_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
       [
         data.email,
+        data.password,
         data.name,
         data.gender,
         data.birth,
