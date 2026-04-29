@@ -51,7 +51,7 @@ export const responseFromUser = ({user, preferences,}: {
   preferences: any[];
 }): UserSignUpResponse => {
   return {
-    id: user.id,
+    id: user.user_id,
     email: user.email,
     name: user.name,
     gender: user.gender,

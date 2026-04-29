@@ -45,7 +45,7 @@ export const getUser = async (userId: number): Promise<any | null> => {
 
   try {
     const [user] = await pool.query<RowDataPacket[]>(
-      `SELECT * FROM user WHERE id = ?;`,
+      `SELECT * FROM user WHERE user_id = ?;`,
       [userId]
     );
 
@@ -83,8 +83,8 @@ export const getUserPreferencesByUserId = async (userId: number): Promise<any[]>
 
   try {
     const [preferences] = await pool.query<RowDataPacket[]>(
-      "SELECT ufc.id, ufc.food_category_id, ufc.user_id, fcl.name " +
-      "FROM user_favor_category ufc JOIN food_category fcl on ufc.food_category_id = fcl.id " +
+      "SELECT ufc.user_favor_category_id as id, ufc.food_category_id, ufc.user_id, fcl.name " +
+      "FROM user_favor_category ufc JOIN food_category fcl ON ufc.food_category_id = fcl.food_category_id " +
       "WHERE ufc.user_id = ? ORDER BY ufc.food_category_id ASC;",
       [userId]
     );
