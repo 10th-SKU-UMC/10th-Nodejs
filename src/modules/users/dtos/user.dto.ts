@@ -28,7 +28,7 @@ export const bodyToUser = (body: UserSignUpRequest) => {
 
 interface UserPreference {
   id: number;
-  food_category_id: number;
+  category_id: number;
   user_id: number;
   name: string;
 }
@@ -49,7 +49,7 @@ export const responseFromUser = ({ user, preferences }: UserResponse) => {
     detailAddress: user.detail_address,
     phoneNumber: user.phone_number,
     preferences: preferences.map((preference) => ({
-      id: preference.food_category_id,
+      id: preference.category_id,
       name: preference.name,
     })),
   };
