@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { bodyToMissionState } from "../dtos/mission_state.dto.js";
-import { challengeMission } from "../services/mission_state.service.js";
+import { challengeMission, listUserMissions } from "../services/mission_state.service.js";
 
 export const handleChallengeMission = async (
   req: Request,
@@ -23,6 +23,24 @@ export const handleChallengeMission = async (
       res.status(StatusCodes.BAD_REQUEST).json({ error: err.message });
       return;
     }
+    next(err);
+  }
+};
+
+export const handleListUserMissions = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = parseInt(req.params.userId as string);
+    const cursor = req.query.cursor
+      ? parseInt(req.query.cursor as string)
+      : undefined;
+
+    const missions = await listUserMissions({ userId, cursor });
+    res.status(StatusCodes.OK).json({ result: missions });
+  } catch (err) {
     next(err);
   }
 };
