@@ -1,60 +1,42 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { prisma, pool } from "../../../db.config.js";
+import { prisma } from "../../../db.config.js";
 import { ReviewItem } from "../dtos/review.dto.js";
 
 // 가게 이름으로 가게 조회
-export const getStoreByName = async (storeName: string): Promise<any | null> => {
-  const conn = await pool.getConnection();
-  try {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `SELECT * FROM store WHERE name = ? LIMIT 1;`,
-      [storeName]
-    );
-    return rows.length > 0 ? rows[0] : null;
-  } catch (err) {
-    throw new Error(`오류가 발생했어요: ${err}`);
-  } finally {
-    conn.release();
-  }
+export const getStoreByName = async (storeName: string) => {
+  return await prisma.store.findFirst({
+    where: { name: storeName },
+  });
 };
 
 // 리뷰 추가
-export const addReview = async (data: {
-  content: string;
-  img: string | null;
-  countStar: string;
-  userId: number;
-  storeId: number;
-}): Promise<number> => {
-  const conn = await pool.getConnection();
-  try {
-    const [result] = await conn.query<ResultSetHeader>(
-      `INSERT INTO review (content, img, count_star, user_id, store_id)
-       VALUES (?, ?, ?, ?, ?);`,
-      [data.content, data.img, data.countStar, data.userId, data.storeId]
-    );
-    return result.insertId;
-  } catch (err) {
-    throw new Error(`오류가 발생했어요: ${err}`);
-  } finally {
-    conn.release();
-  }
+export const addReview = async (
+  data: {
+    content: string;
+    img: string | null;
+    countStar: string;
+    userId: number;
+    storeId: bigint;
+  },
+  tx: any = prisma
+): Promise<bigint> => {
+  const review = await tx.review.create({
+    data: {
+      content: data.content,
+      img: data.img,
+      countStar: data.countStar,
+      userId: data.userId,
+      storeId: data.storeId,
+    },
+  });
+  return review.reviewId;
 };
 
 // 리뷰 조회
-export const getReview = async (reviewId: number): Promise<any | null> => {
-  const conn = await pool.getConnection();
-  try {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `SELECT * FROM review WHERE review_id = ?;`,
-      [reviewId]
-    );
-    return rows.length > 0 ? rows[0] : null;
-  } catch (err) {
-    throw new Error(`오류가 발생했어요: ${err}`);
-  } finally {
-    conn.release();
-  }
+export const getReview = async (reviewId: bigint, tx: any = prisma) => {
+  return await tx.review.findUnique({
+    where: { reviewId },
+  });
 };
 
 // 모든 리뷰 가져오기 
