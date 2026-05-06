@@ -12,6 +12,7 @@ datasource db {
   provider = "mysql"
 }
 
+// 회원 
 model User {
   id            Int      @id @default(autoincrement())
   email         String   @unique(map: "email") @db.VarChar(255)
@@ -27,6 +28,7 @@ model User {
   @@map("user")
 }
 
+// 음식 카테고리 
 model FoodCategory {
   id   Int    @id @default(autoincrement())
   name String @db.VarChar(100)
@@ -36,6 +38,7 @@ model FoodCategory {
   @@map("food_category")
 }
 
+// 유저 선호 카테고리
 model UserFavorCategory {
   id             Int          @id @default(autoincrement())
   user           User         @relation(fields: [userId], references: [id])
@@ -46,4 +49,74 @@ model UserFavorCategory {
   @@index([foodCategoryId], map: "f_category_id")
   @@index([userId], map: "user_id")
   @@map("user_favor_category")
+}
+
+// 지역
+model Local {
+  localId   BigInt  @id @default(autoincrement()) @map("local_id")
+  localName String  @db.VarChar(50) @map("local_name")
+
+  stores Store[]
+
+  @@map("local")
+}
+
+// 가게
+model Store {
+  storeId   BigInt  @id @default(autoincrement()) @map("store_id")
+  name      String  @db.VarChar(25)
+  category  String  @db.VarChar(10)
+  startTime String  @db.VarChar(25) @map("start_time")
+  endTime   String  @db.VarChar(25) @map("end_time")
+  rating    Float   @default(0.0)
+  localId   BigInt  @map("local_id")
+
+  local        Local          @relation(fields: [localId], references: [localId])
+  reviews      Review[]
+  missions     Mission[]
+
+  @@index([name], map: "idx_store_name")
+  @@map("store")
+}
+
+// 리뷰
+model Review {
+  reviewId  BigInt   @id @default(autoincrement()) @map("review_id")
+  content   String   @db.VarChar(225)
+  img       String?  @db.VarChar(100)
+  countStar String   @map("count_star") @db.VarChar(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  userId    Int      @map("user_id")
+  storeId   BigInt   @map("store_id")
+
+  user  User  @relation(fields: [userId], references: [userId])
+  store Store @relation(fields: [storeId], references: [storeId])
+
+  @@map("review")
+}
+
+// 미션
+model Mission {
+  missionId BigInt  @id @default(autoincrement()) @map("mission_id")
+  detail    String  @db.VarChar(225)
+  point     BigInt
+  storeId   BigInt  @map("store_id")
+
+  store         Store          @relation(fields: [storeId], references: [storeId])
+  missionStates MissionState[]
+
+  @@map("mission")
+}
+
+// 미션 상태
+model MissionState {
+  stateId   BigInt  @id @default(autoincrement()) @map("state_id")
+  userId    Int     @map("user_id")
+  missionId BigInt  @map("mission_id")
+  state     String  @default("도전중") @db.VarChar(10)
+
+  user    User    @relation(fields: [userId], references: [userId])
+  mission Mission @relation(fields: [missionId], references: [missionId])
+
+  @@map("mission_state")
 }

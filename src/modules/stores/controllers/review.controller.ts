@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { bodyToReview } from "../dtos/review.dto.js";
-import { createReview } from "../services/review.service.js";
+import { createReview, listStoreReviews } from "../services/review.service.js";
 
 export const handleCreateReview = async (
   req: Request,
@@ -19,6 +19,25 @@ export const handleCreateReview = async (
       res.status(StatusCodes.NOT_FOUND).json({ error: err.message });
       return;
     }
+    next(err);
+  }
+};
+
+export const handleListStoreReviews = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const storeId = parseInt(req.params.storeId);
+    const cursor = req.query.cursor
+      ? parseInt(req.query.cursor as string)
+      : undefined;
+
+    const reviews = await listStoreReviews(storeId);
+
+    res.status(StatusCodes.OK).json(reviews);
+  } catch (err) {
     next(err);
   }
 };

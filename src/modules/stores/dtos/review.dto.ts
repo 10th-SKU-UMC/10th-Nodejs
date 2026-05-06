@@ -43,3 +43,32 @@ export const responseFromReview = ({
     storeName: store.name,
   };
 };
+
+//get review
+export interface ReviewItem {
+  nickname: string;    // 닉네임
+  countStar: string;   // 별점
+  createdAt: Date;     // 리뷰 작성 날짜
+  content: string;     // 리뷰 상세 내용
+  cursor: number;      // 페이지네이션용 id
+}
+
+export interface ReviewListResponse {
+  data: Omit<ReviewItem, "cursor">[];
+  pagination: {
+    cursor: number | null;
+  };
+}
+
+ export const responseFromReviews = (
+    reviews: ReviewItem[]
+  ): ReviewListResponse => {
+    const lastReview = reviews[reviews.length - 1];
+  
+    return {
+    data: reviews.map(({ cursor, ...rest }) => rest),
+    pagination: {
+      cursor: lastReview ? lastReview.cursor : null,
+    },
+  };
+  };

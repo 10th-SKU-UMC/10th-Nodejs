@@ -4,6 +4,7 @@ import {
   getStoreByName,
   addReview,
   getReview,
+  getAllStoreReviews
 } from "../repositories/review.repository.js";
 
 export const createReview = async (data: {
@@ -44,4 +45,11 @@ export const createReview = async (data: {
   } finally {
     conn.release();
   }
+};
+
+export const listStoreReviews = async (
+  storeId: number
+): Promise<ReviewListResponse> => {
+  const reviews = await getAllStoreReviews(storeId);
+  return responseFromReview(reviews);
 };

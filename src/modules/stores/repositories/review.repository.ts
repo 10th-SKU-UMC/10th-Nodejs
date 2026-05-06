@@ -1,4 +1,5 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
+import { prisma } from "../../../db.config.js";
 import { pool } from "../../../db.config.js";
 
 // 가게 이름으로 가게 조회
@@ -55,3 +56,31 @@ export const getReview = async (reviewId: number): Promise<any | null> => {
     conn.release();
   }
 };
+
+// 모든 리뷰 가져오기 
+export const getAllStoreReviews = async (
+    storeId: number,
+    cursor: number,
+    take = 5,
+  ) => {
+    const reviews = await prisma.review.findMany({
+      select: {
+        id: true,
+        content: true,
+        store: true,
+        user: true,
+      },
+      where: {
+        storeId,
+        id: {
+          gt: cursor,
+        },
+      },
+      orderBy: {
+        id: "asc",
+      },
+      take: 5,
+    });
+  
+    return reviews;
+  };
