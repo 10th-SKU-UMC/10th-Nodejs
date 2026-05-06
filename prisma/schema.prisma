@@ -24,6 +24,8 @@ model User {
   phoneNumber   String   @map("phone_number") @db.VarChar(15)
 
   userFavorCategories UserFavorCategory[]
+  reviews             Review[]        
+  missionStates       MissionState[]  
 
   @@map("user")
 }
@@ -89,7 +91,7 @@ model Review {
   userId    Int      @map("user_id")
   storeId   BigInt   @map("store_id")
 
-  user  User  @relation(fields: [userId], references: [userId])
+  user  User  @relation(fields: [userId], references: [id])   // userId → id
   store Store @relation(fields: [storeId], references: [storeId])
 
   @@map("review")
@@ -115,7 +117,7 @@ model MissionState {
   missionId BigInt  @map("mission_id")
   state     String  @default("도전중") @db.VarChar(10)
 
-  user    User    @relation(fields: [userId], references: [userId])
+  user    User    @relation(fields: [userId], references: [id])   // userId → id
   mission Mission @relation(fields: [missionId], references: [missionId])
 
   @@map("mission_state")

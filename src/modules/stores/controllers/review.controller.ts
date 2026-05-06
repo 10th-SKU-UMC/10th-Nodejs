@@ -27,16 +27,15 @@ export const handleListStoreReviews = async (
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+) => {
   try {
-    const storeId = parseInt(req.params.storeId);
+    const storeId = parseInt(req.params.storeId as string);
     const cursor = req.query.cursor
       ? parseInt(req.query.cursor as string)
       : undefined;
 
-    const reviews = await listStoreReviews(storeId);
-
-    res.status(StatusCodes.OK).json(reviews);
+    const reviews = await listStoreReviews({ storeId, cursor });
+    res.status(StatusCodes.OK).json({ result: reviews });
   } catch (err) {
     next(err);
   }

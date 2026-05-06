@@ -1,5 +1,5 @@
 import { pool } from "../../../db.config.js";
-import { responseFromReview } from "../dtos/review.dto.js";
+import { responseFromReview, responseAllFromReview } from "../dtos/review.dto.js";
 import {
   getStoreByName,
   addReview,
@@ -47,9 +47,18 @@ export const createReview = async (data: {
   }
 };
 
-export const listStoreReviews = async (
-  storeId: number
-): Promise<ReviewListResponse> => {
-  const reviews = await getAllStoreReviews(storeId);
-  return responseFromReview(reviews);
+export const listStoreReviews = async ({
+  storeId,
+  cursor,
+}: {
+  storeId: number;
+  cursor?: number;
+}) => {
+  const reviews = await getAllStoreReviews({
+    storeId: BigInt(storeId),
+    cursor,
+    take: 5,
+  });
+
+  return responseAllFromReview(reviews);
 };

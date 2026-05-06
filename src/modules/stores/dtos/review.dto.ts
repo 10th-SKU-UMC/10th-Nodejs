@@ -44,13 +44,13 @@ export const responseFromReview = ({
   };
 };
 
-//get review
+// 가게 전체 리뷰 가져오는 dto 
 export interface ReviewItem {
-  nickname: string;    // 닉네임
-  countStar: string;   // 별점
-  createdAt: Date;     // 리뷰 작성 날짜
-  content: string;     // 리뷰 상세 내용
-  cursor: number;      // 페이지네이션용 id
+  cursor: number;       // 스크롤 
+  nickname: string;     // 닉네임
+  countStar: string;    // 별점
+  createdAt: Date;      // 작성일
+  content: string;      // 내용
 }
 
 export interface ReviewListResponse {
@@ -60,15 +60,13 @@ export interface ReviewListResponse {
   };
 }
 
- export const responseFromReviews = (
-    reviews: ReviewItem[]
-  ): ReviewListResponse => {
-    const lastReview = reviews[reviews.length - 1];
-  
-    return {
+export const responseAllFromReview = (reviews: ReviewItem[]): ReviewListResponse => {
+  const lastReview = reviews[reviews.length - 1];
+
+  return {
     data: reviews.map(({ cursor, ...rest }) => rest),
     pagination: {
       cursor: lastReview ? lastReview.cursor : null,
     },
   };
-  };
+};
