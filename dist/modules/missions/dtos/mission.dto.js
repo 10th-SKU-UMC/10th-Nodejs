@@ -14,4 +14,13 @@ export const responseFromMission = ({ mission, store, }) => {
         storeName: store.name,
     };
 };
+export const responseFromMissions = (missions) => {
+    const lastMission = missions[missions.length - 1];
+    return {
+        data: missions.map(({ cursor, ...rest }) => rest),
+        pagination: {
+            cursor: lastMission ? lastMission.cursor : null,
+        },
+    };
+};
 //# sourceMappingURL=mission.dto.js.map

@@ -14,4 +14,21 @@ export const responseFromMissionState = ({ missionState, mission, }) => {
         state: missionState.state,
     };
 };
+export const responseFromUserMissions = (missions) => {
+    const lastMission = missions[missions.length - 1];
+    return {
+        data: missions.map(({ cursor, ...rest }) => rest),
+        pagination: {
+            cursor: lastMission ? lastMission.cursor : null,
+        },
+    };
+};
+export const responseFromMissionStateUpdate = (missionState) => {
+    return {
+        stateId: Number(missionState.stateId),
+        missionId: Number(missionState.missionId),
+        userId: missionState.userId,
+        state: missionState.state,
+    };
+};
 //# sourceMappingURL=mission_state.dto.js.map

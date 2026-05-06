@@ -33,7 +33,7 @@ app.post("/api/v1/store/mission", handleCreateMission)
 app.post("/api/v1/store/mission/state", handleChallengeMission)
 
 app.get("/api/v1/stores/:storeId/reviews", handleListStoreReviews);
-app.get("/api/v1/users/:userId/reviews", handleListUserReviews);
+app.get("/api", handleListUserReviews);
 app.get("/api/v1/stores/:storeId/mission", handleListStoreMissions);
 app.get("/api/v1/users/:userId/mission", handleListUserMissions);
 
