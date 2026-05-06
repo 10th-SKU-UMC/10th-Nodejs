@@ -70,3 +70,30 @@ export const responseAllFromReview = (reviews: ReviewItem[]): ReviewListResponse
     },
   };
 };
+
+// 작성자의 리뷰보기
+export interface UserReviewItem {
+  cursor: number;
+  storeName: string;
+  countStar: string;
+  createdAt: Date;
+  content: string;
+}
+
+export interface UserReviewListResponse {
+  data: Omit<UserReviewItem, "cursor">[];
+  pagination: {
+    cursor: number | null;
+  };
+}
+
+export const responseFromUserReviews = (reviews: UserReviewItem[]): UserReviewListResponse => {
+  const lastReview = reviews[reviews.length - 1];
+
+  return {
+    data: reviews.map(({ cursor, ...rest }) => rest),
+    pagination: {
+      cursor: lastReview ? lastReview.cursor : null,
+    },
+  };
+};

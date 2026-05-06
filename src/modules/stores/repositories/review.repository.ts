@@ -1,6 +1,6 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { prisma } from "../../../db.config.js";
-import { ReviewItem } from "../dtos/review.dto.js";
+import { ReviewItem, UserReviewItem } from "../dtos/review.dto.js";
 
 // 가게 이름으로 가게 조회
 export const getStoreByName = async (storeName: string) => {
@@ -71,6 +71,44 @@ export const getAllStoreReviews = async ({
   return reviews.map((r) => ({
     cursor: Number(r.reviewId),
     nickname: r.user.name,
+    countStar: r.countStar,
+    createdAt: r.createdAt,
+    content: r.content,
+  }));
+};
+
+
+export const getUserAllReviews = async ({
+  userId,
+  cursor,
+  take = 5,
+}: {
+  userId: number;
+  cursor?: number;
+  take?: number;
+}): Promise<UserReviewItem[]> => {
+  const reviews = await prisma.review.findMany({
+    where: { userId },
+    take,
+    ...(cursor && {
+      skip: 1,
+      cursor: { reviewId: BigInt(cursor) },
+    }),
+    orderBy: { reviewId: "desc" },
+    select: {
+      reviewId: true,
+      content: true,
+      countStar: true,
+      createdAt: true,
+      store: {
+        select: { name: true },
+      },
+    },
+  });
+
+  return reviews.map((r) => ({
+    cursor: Number(r.reviewId),
+    storeName: r.store.name,
     countStar: r.countStar,
     createdAt: r.createdAt,
     content: r.content,

@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { bodyToReview } from "../dtos/review.dto.js";
-import { createReview, listStoreReviews } from "../services/review.service.js";
+import { createReview, listStoreReviews, listUserReviews } from "../services/review.service.js";
 
 export const handleCreateReview = async (
   req: Request,
@@ -23,6 +23,7 @@ export const handleCreateReview = async (
   }
 };
 
+
 export const handleListStoreReviews = async (
   req: Request,
   res: Response,
@@ -35,6 +36,25 @@ export const handleListStoreReviews = async (
       : undefined;
 
     const reviews = await listStoreReviews({ storeId, cursor });
+    res.status(StatusCodes.OK).json({ result: reviews });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+export const handleListUserReviews = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = parseInt(req.params.userId as string);
+    const cursor = req.query.cursor
+      ? parseInt(req.query.cursor as string)
+      : undefined;
+
+    const reviews = await listUserReviews({ userId, cursor });
     res.status(StatusCodes.OK).json({ result: reviews });
   } catch (err) {
     next(err);
