@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { bodyToMissionState } from "../dtos/mission_state.dto.js";
-import { challengeMission } from "../services/mission_state.service.js";
+import { challengeMission, listUserMissions, changeMissionState } from "../services/mission_state.service.js";
 
 export const handleChallengeMission = async (
   req: Request,
@@ -20,6 +20,48 @@ export const handleChallengeMission = async (
       return;
     }
     if (err.message === "이미 도전 중인 미션입니다.") {
+      res.status(StatusCodes.BAD_REQUEST).json({ error: err.message });
+      return;
+    }
+    next(err);
+  }
+};
+
+export const handleListUserMissions = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = parseInt(req.params.userId as string);
+    const cursor = req.query.cursor
+      ? parseInt(req.query.cursor as string)
+      : undefined;
+
+    const missions = await listUserMissions({ userId, cursor });
+    res.status(StatusCodes.OK).json({ result: missions });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const handleChangeMissionState = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const missionId = parseInt(req.params.missionId as string);
+    const userId = parseInt(req.body.userId);
+
+    const missionState = await changeMissionState(missionId, userId);
+    res.status(StatusCodes.OK).json({ result: missionState });
+  } catch (err: any) {
+    if (err.message === "없는 미션입니다.") {
+      res.status(StatusCodes.NOT_FOUND).json({ error: err.message });
+      return;
+    }
+    if (err.message === "도전 중인 미션이 아닙니다.") {
       res.status(StatusCodes.BAD_REQUEST).json({ error: err.message });
       return;
     }

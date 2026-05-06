@@ -1,9 +1,10 @@
-import { pool } from "../../../db.config.js";
-import { responseFromMission } from "../dtos/mission.dto.js";
+import { prisma } from "../../../db.config.js";
+import { responseFromMission, responseFromMissions } from "../dtos/mission.dto.js";
 import {
   getStoreByName,
   addMission,
   getMission,
+  getStoreAllMissions
 } from "../repositories/mission.repository.js";
 
 export const createMission = async (data: {
@@ -11,33 +12,35 @@ export const createMission = async (data: {
   point: number;
   storeName: string;
 }) => {
-  const conn = await pool.getConnection();
+  const store = await getStoreByName(data.storeName);
+  if (store === null) {
+    throw new Error("없는 가게입니다.");
+  }
 
-  try {
-    await conn.beginTransaction();
-
-    // 가게 존재 여부 검증
-    const store = await getStoreByName(data.storeName);
-    if (store === null) {
-      throw new Error("없는 가게입니다.");
-    }
-
-    // 미션 추가
+  const mission = await prisma.$transaction(async (tx) => {
     const missionId = await addMission({
       detail: data.detail,
       point: data.point,
-      storeId: store.store_id,
+      storeId: store.storeId,
     });
+    return await getMission(missionId);
+  });
 
-    const mission = await getMission(missionId);
+  return responseFromMission({ mission, store });
+};
 
-    await conn.commit();
-    return responseFromMission({ mission, store });
+export const listStoreMissions = async ({
+  storeId,
+  cursor,
+}: {
+  storeId: number;
+  cursor?: number;
+}) => {
+  const missions = await getStoreAllMissions({
+    storeId: BigInt(storeId),
+    cursor,
+    take: 5,
+  });
 
-  } catch (err) {
-    await conn.rollback();
-    throw err;
-  } finally {
-    conn.release();
-  }
+  return responseFromMissions(missions);
 };
