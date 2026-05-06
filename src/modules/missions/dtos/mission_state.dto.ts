@@ -62,3 +62,20 @@ export const responseFromUserMissions = (missions: UserMissionItem[]): UserMissi
     },
   };
 };
+
+// 미션 상태 바꾸기
+export interface MissionStateUpdateResponse {
+  stateId: number;
+  missionId: number;
+  userId: number;
+  state: string;
+}
+
+export const responseFromMissionStateUpdate = (missionState: any): MissionStateUpdateResponse => {
+  return {
+    stateId: Number(missionState.stateId),
+    missionId: Number(missionState.missionId),
+    userId: missionState.userId,
+    state: missionState.state,
+  };
+};

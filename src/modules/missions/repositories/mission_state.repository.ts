@@ -86,3 +86,26 @@ export const getUserAllMissions = async ({
     state: m.state,
   }));
 };
+
+// 상태 바꾸기 
+export const updateMissionState = async (missionId: bigint, userId: number) => {
+  return await prisma.missionState.updateMany({
+    where: {
+      missionId,
+      userId,
+      state: "도전중",
+    },
+    data: {
+      state: "진행완료",
+    },
+  });
+};
+
+export const getMissionStateByMissionId = async (missionId: bigint, userId: number) => {
+  return await prisma.missionState.findFirst({
+    where: {
+      missionId,
+      userId,
+    },
+  });
+};
