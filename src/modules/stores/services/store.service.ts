@@ -1,5 +1,5 @@
-import { storeRepository } from "../repositories/store.repository";
-import { CreateStoreRequest } from "../dtos/store.dto";
+import { storeRepository, getAllStoreReviews } from "../repositories/store.repository";
+import { CreateStoreRequest, ReviewListResponse, responseFromReviews } from "../dtos/store.dto";
 
 export const storeService = {
   async createStore(data: CreateStoreRequest) {
@@ -7,13 +7,18 @@ export const storeService = {
     if (!data.name || !data.region || !data.address || !data.category) {
       throw new Error("모든 항목을 입력해주세요.");
     }
-
-
     const storeId = await storeRepository.createStore(data);
-
     return {
       id: storeId,
-      ...data,
+      ...data
     };
   },
+};
+
+export const listStoreReviews = async (
+  storeId: number,
+  cursor: number 
+): Promise<ReviewListResponse> => {
+  const reviews = await getAllStoreReviews(storeId, cursor);
+  return responseFromReviews(reviews);
 };
