@@ -3,9 +3,13 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import { handleUserSignUp } from "./modules/users/controllers/user.controller.js";
 import { handleCreateStore } from "./modules/stores/controllers/store.controller.js";
-import { handleCreateReview, handleListStoreReviews} from "./modules/reviews/controllers/review.controller.js";
-import { handleCreateMission } from "./modules/missions/controllers/mission.controller.js";
-import { handleCreateUserMission } from "./modules/user_missions/controllers/user_mission.controller.js";
+import { handleCreateReview, handleListMyReviews, handleListStoreReviews} from "./modules/reviews/controllers/review.controller.js";
+import { handleCreateMission, handleListStoreMissions } from "./modules/missions/controllers/mission.controller.js";
+import {
+  handleCompleteUserMission,
+  handleCreateUserMission,
+  handleListInProgressUserMissions,
+} from "./modules/user_missions/controllers/user_mission.controller.js";
 
 // 1. 환경 변수 설정
 dotenv.config();
@@ -29,8 +33,12 @@ app.post("/api/v1/regions/:regionId/stores", handleCreateStore);
 app.post("/api/v1/stores/:storeId/reviews", handleCreateReview);
 app.post("/api/v1/stores/:storeId/missions", handleCreateMission);
 app.post("/api/v1/users/:userId/missions/:missionId", handleCreateUserMission);
+app.patch("/api/v1/users/:userId/missions/:missionId/complete", handleCompleteUserMission);
 
 app.get("/api/v1/stores/:storeId/reviews", handleListStoreReviews);
+app.get("/api/v1/users/:userId/reviews", handleListMyReviews);
+app.get("/api/v1/stores/:storeId/missions", handleListStoreMissions);
+app.get("/api/v1/users/:userId/missions/in-progress", handleListInProgressUserMissions);
 
 // 4. 서버 시작
 app.listen(port, () => {

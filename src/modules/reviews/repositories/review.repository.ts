@@ -54,3 +54,36 @@ export const getStoreReviews = async (storeId: number, cursor: number) => {
     take: 5,
   });
 };
+
+export const getUserReviews = async (userId: number, cursor: number) => {
+  return await prisma.review.findMany({
+    select: {
+      id: true,
+      content: true,
+      score: true,
+      createdAt: true,
+      store: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      reviewImages: {
+        select: {
+          id: true,
+          imageUrl: true,
+        },
+      },
+    },
+    where: {
+      userId,
+      id: {
+        gt: cursor,
+      },
+    },
+    orderBy: {
+      id: "asc",
+    },
+    take: 5,
+  });
+};

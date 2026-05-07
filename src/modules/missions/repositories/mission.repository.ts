@@ -48,3 +48,30 @@ export const addUserMission = async (missionId: number, userId: number): Promise
     throw new Error(`오류가 발생했어요: ${err}`);
   }
 };
+
+export const getStoreMissions = async (storeId: number, cursor: number) => {
+  try {
+    return await prisma.mission.findMany({
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        point: true,
+        deadline: true,
+        createdAt: true,
+      },
+      where: {
+        storeId,
+        id: {
+          gt: cursor,
+        },
+      },
+      orderBy: {
+        id: "asc",
+      },
+      take: 5,
+    });
+  } catch (err) {
+    throw new Error(`오류가 발생했어요: ${err}`);
+  }
+};
