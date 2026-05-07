@@ -1,28 +1,42 @@
-import {pool} from "../../../db.config";
+import { prisma } from "../../../db.config.js";
 
 export const storeRepository = {
   async createStore(data: any) {
-    const query = `
-      INSERT INTO stores (name, region, address, category)
-      VALUES (?, ?, ?, ?)
-    `;
-    
-    const [result]: any = await pool.execute(query, [
-      data.name,
-      data.region,
-      data.address,
-      data.category,
-    ]);
-
-    return result.insertId;
+    const store = await prisma.store.create({
+      data: {
+        name: data.name,
+        address: data.address,
+        region: data.region,   
+        category: data.category,
+      },
+    });
+    return store.id;
   },
 
   async findStoreById(storeId: number) {
-    const query = `
-      SELECT * FROM stores
-      WHERE id = ?
-    `;
-    const [rows]: any = await pool.execute(query, [storeId]);
-    return rows[0];
+    return await prisma.store.findFirst({
+      where: {id: storeId },
+    });
   },
+};
+
+export const getAllStoreReviews = async (storeId: number, cursor: number) => {
+  const reviews = await prisma.userStoreReview.findMany({
+    select: {
+      id: true,
+      content: true,
+      storeId: true,
+      userId: true,
+      store: true,
+      user: true,
+    },
+    where: {
+      storeId,
+      ...(cursor > 0 && { id: {gt: cursor } }),
+    },
+    orderBy: { id: "asc"},
+    take: 5,
+  });
+
+  return reviews;
 };

@@ -13,7 +13,7 @@ export const userSignUp = async (data: UserSignUpRequest) => {
     name: data.name,
     gender: data.gender,
     birth: new Date(data.birth), // 문자열을 Date 객체로 변환해서 넘겨줍니다. 
-    address: data.address,
+    address: data.address ?? "",
     detailAddress: data.detailAddress,
     phoneNumber: data.phoneNumber,
   });

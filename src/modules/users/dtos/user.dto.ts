@@ -29,12 +29,16 @@ export interface UserResponse {
   id: number;
   email: string;
   name: string;
+  perferCategory: string[];
 }
 
-export const responseFromUser = (user: any): UserResponse => {
+export const responseFromUser = (data: {user:any, preferences: any[]}): UserResponse => {
+  const perferCategory= data.preferences.map((p)=>p.foodCategory.name);
+
   return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-  };
-};
+    id: data.user.id,
+    email: data.user.email,
+    name: data.user.name,
+    perferCategory: perferCategory,
+  }
+}
