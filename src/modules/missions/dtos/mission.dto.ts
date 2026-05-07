@@ -26,3 +26,46 @@ export const responseFromMission = ({ missionId, createdAt }: MissionResponseInp
     created_at: createdAt,
   };
 };
+
+export interface MissionItem {
+  id: number;
+  title: string;
+  content: string;
+  point: number;
+  deadline: Date;
+  createdAt: Date | null;
+}
+
+export interface MissionListResponse {
+  data: {
+    missionId: number;
+    title: string;
+    content: string;
+    point: number;
+    deadline: Date;
+    createdAt: Date | null;
+  }[];
+  pagination: {
+    cursor: number | null;
+  };
+}
+
+export const responseFromMissions = (
+  missions: MissionItem[]
+): MissionListResponse => {
+  const lastMission = missions[missions.length - 1];
+
+  return {
+    data: missions.map((mission) => ({
+      missionId: mission.id,
+      title: mission.title,
+      content: mission.content,
+      point: mission.point,
+      deadline: mission.deadline,
+      createdAt: mission.createdAt,
+    })),
+    pagination: {
+      cursor: lastMission ? lastMission.id : null,
+    },
+  };
+};

@@ -1,53 +1,77 @@
-import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { pool } from "../../../db.config.js";
+import { prisma } from "../../../db.config.js";
+import { UserMissionStatus } from "../../../generated/prisma/enums.js";
 
 export const addMission = async (data: any): Promise<number> => {
-  const conn = await pool.getConnection();
-
   try {
-    const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO mission (store_id, title, content, point, deadline) VALUES (?, ?, ?, ?, ?);`,
-      [data.storeId, data.title, data.content, data.point, data.deadline]
-    );
+    const mission = await prisma.mission.create({
+      data: {
+        storeId: data.storeId,
+        title: data.title,
+        content: data.content,
+        point: data.point,
+        deadline: data.deadline,
+      },
+    });
 
-    return result.insertId;
+    return mission.id;
   } catch (err) {
     throw new Error(`오류가 발생했어요: ${err}`);
-  } finally {
-    conn.release();
   }
 };
 
 export const getUserMissionByMissionId = async (missionId: number, userId: number): Promise<any | null> => {
-  const conn = await pool.getConnection();
-
   try {
-    const [missions] = await pool.query<RowDataPacket[]>(
-      `SELECT * FROM user_mission WHERE mission_id = ? AND user_id = ? AND status = 'PROGRESS';`,
-      [missionId, userId]
-    );
-
-    return missions[0] ?? null;
+    return await prisma.userMission.findFirst({
+      where: {
+        missionId,
+        userId,
+        status: UserMissionStatus.IN_PROGRESS,
+      },
+    });
   } catch (err) {
     throw new Error(`오류가 발생했어요: ${err}`);
-  } finally {
-    conn.release();
   }
 };
 
 export const addUserMission = async (missionId: number, userId: number): Promise<number> => {
-  const conn = await pool.getConnection();
-
   try {
-    const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO user_mission (mission_id, user_id, status) VALUES (?, ?, 'PROGRESS');`,
-      [missionId, userId]
-    );
+    const userMission = await prisma.userMission.create({
+      data: {
+        missionId,
+        userId,
+        status: UserMissionStatus.IN_PROGRESS,
+      },
+    });
 
-    return result.insertId;
+    return userMission.id;
   } catch (err) {
     throw new Error(`오류가 발생했어요: ${err}`);
-  } finally {
-    conn.release();
+  }
+};
+
+export const getStoreMissions = async (storeId: number, cursor: number) => {
+  try {
+    return await prisma.mission.findMany({
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        point: true,
+        deadline: true,
+        createdAt: true,
+      },
+      where: {
+        storeId,
+        id: {
+          gt: cursor,
+        },
+      },
+      orderBy: {
+        id: "asc",
+      },
+      take: 5,
+    });
+  } catch (err) {
+    throw new Error(`오류가 발생했어요: ${err}`);
   }
 };
