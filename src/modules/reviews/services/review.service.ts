@@ -1,6 +1,8 @@
 import { responseFromReview } from "../dtos/review.dto.js";
 import { addReview, addReviewImage } from "../repositories/review.repository.js";
 import { getStoreById } from "../../stores/repositories/store.repository.js";
+import { ReviewListResponse, responseFromReviews } from "../dtos/review.dto.js";
+import { getStoreReviews } from "../repositories/review.repository.js";
 
 export const createReview = async (data: any) => {
   const store = await getStoreById(data.storeId);
@@ -19,4 +21,12 @@ export const createReview = async (data: any) => {
     reviewId,
     createdAt: new Date(),
   });
+};
+
+export const listStoreReviews = async (
+  storeId: number,
+  cursor: number
+): Promise<ReviewListResponse> => {
+  const reviews = await getStoreReviews(storeId, cursor);
+  return responseFromReviews(reviews);
 };

@@ -12,7 +12,7 @@ export const createUserMission = async (data: any) => {
 
   return responseFromUserMission({
     userMissionId,
-    status: "PROGRESS",
+    status: "IN_PROGRESS",
     createdAt: new Date(),
   });
 };

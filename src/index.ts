@@ -3,7 +3,7 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import { handleUserSignUp } from "./modules/users/controllers/user.controller.js";
 import { handleCreateStore } from "./modules/stores/controllers/store.controller.js";
-import { handleCreateReview } from "./modules/reviews/controllers/review.controller.js";
+import { handleCreateReview, handleListStoreReviews} from "./modules/reviews/controllers/review.controller.js";
 import { handleCreateMission } from "./modules/missions/controllers/mission.controller.js";
 import { handleCreateUserMission } from "./modules/user_missions/controllers/user_mission.controller.js";
 
@@ -29,6 +29,8 @@ app.post("/api/v1/regions/:regionId/stores", handleCreateStore);
 app.post("/api/v1/stores/:storeId/reviews", handleCreateReview);
 app.post("/api/v1/stores/:storeId/missions", handleCreateMission);
 app.post("/api/v1/users/:userId/missions/:missionId", handleCreateUserMission);
+
+app.get("/api/v1/stores/:storeId/reviews", handleListStoreReviews);
 
 // 4. 서버 시작
 app.listen(port, () => {
