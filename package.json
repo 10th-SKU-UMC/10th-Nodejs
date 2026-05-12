@@ -1,0 +1,20 @@
+{
+  "name": "umc-node-simple-api",
+  "version": "1.0.0",
+  "description": "Simple Express API server with SQLite dummy data.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "init:db": "node scripts/initDb.js",
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "express": "^4.19.2",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.3"
+  }
+}
