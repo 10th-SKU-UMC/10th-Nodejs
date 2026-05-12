@@ -1,55 +1,65 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { pool } from "../../../db.config.js";
+import { prisma } from "../../../db.config.js";
+import { MissionItem } from "../dtos/mission.dto.js"
 
 // 가게 이름으로 가게 조회
-export const getStoreByName = async (storeName: string): Promise<any | null> => {
-  const conn = await pool.getConnection();
-  try {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `SELECT * FROM store WHERE name = ? LIMIT 1;`,
-      [storeName]
-    );
-    return rows.length > 0 ? rows[0] : null;
-  } catch (err) {
-    throw new Error(`오류가 발생했어요: ${err}`);
-  } finally {
-    conn.release();
-  }
+export const getStoreByName = async (storeName: string) => {
+  return await prisma.store.findFirst({
+    where: { name: storeName },
+  });
 };
 
 // 미션 추가
 export const addMission = async (data: {
   detail: string;
   point: number;
-  storeId: number;
-}): Promise<number> => {
-  const conn = await pool.getConnection();
-  try {
-    const [result] = await conn.query<ResultSetHeader>(
-      `INSERT INTO mission (detail, point, store_id)
-       VALUES (?, ?, ?);`,
-      [data.detail, data.point, data.storeId]
-    );
-    return result.insertId;
-  } catch (err) {
-    throw new Error(`오류가 발생했어요: ${err}`);
-  } finally {
-    conn.release();
-  }
+  storeId: bigint;
+}) => {
+  const mission = await prisma.mission.create({
+    data: {
+      detail: data.detail,
+      point: data.point,
+      storeId: data.storeId,
+    },
+  });
+  return mission.missionId;
 };
 
 // 미션 조회
-export const getMission = async (missionId: number): Promise<any | null> => {
-  const conn = await pool.getConnection();
-  try {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `SELECT * FROM mission WHERE mission_id = ?;`,
-      [missionId]
-    );
-    return rows.length > 0 ? rows[0] : null;
-  } catch (err) {
-    throw new Error(`오류가 발생했어요: ${err}`);
-  } finally {
-    conn.release();
-  }
+export const getMission = async (missionId: bigint) => {
+  return await prisma.mission.findUnique({
+    where: { missionId },
+  });
+};
+
+// 가게 미션 리스트 가져오기 
+export const getStoreAllMissions = async ({
+  storeId,
+  cursor,
+  take = 5,
+}: {
+  storeId: bigint;
+  cursor?: number;
+  take?: number;
+}): Promise<MissionItem[]> => {
+  const missions = await prisma.mission.findMany({
+    where: { storeId },
+    take,
+    ...(cursor && {
+      skip: 1,
+      cursor: { missionId: BigInt(cursor) },
+    }),
+    orderBy: { missionId: "desc" },
+    select: {
+      missionId: true,
+      detail: true,
+      point: true,
+    },
+  });
+
+  return missions.map((m) => ({
+    cursor: Number(m.missionId),
+    missionDetail: m.detail,
+    point: Number(m.point),
+  }));
 };

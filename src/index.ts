@@ -5,9 +5,9 @@ import type { Express, Request, Response } from "express";
 import cors from "cors";
 import { handleUserSignUp } from "./modules/users/controllers/user.controller.js";
 import { handleCreateStore } from "./modules/stores/controllers/store.controller.js";
-import { handleCreateReview } from "./modules/stores/controllers/review.controller.js"
-import { handleCreateMission } from "./modules/missions/controllers/mission.controller.js"
-import { handleChallengeMission } from "./modules/missions/controllers/mission_state.controller.js"
+import { handleCreateReview, handleListStoreReviews, handleListUserReviews } from "./modules/stores/controllers/review.controller.js"
+import { handleCreateMission, handleListStoreMissions } from "./modules/missions/controllers/mission.controller.js"
+import { handleChallengeMission, handleListUserMissions, handleChangeMissionState } from "./modules/missions/controllers/mission_state.controller.js"
 
 // 1. 환경 변수 설정
 dotenv.config();
@@ -31,6 +31,13 @@ app.post("/api/v1/store", handleCreateStore);
 app.post("/api/v1/store/review", handleCreateReview);
 app.post("/api/v1/store/mission", handleCreateMission)
 app.post("/api/v1/store/mission/state", handleChallengeMission)
+
+app.get("/api/v1/stores/:storeId/reviews", handleListStoreReviews);
+app.get("/api", handleListUserReviews);
+app.get("/api/v1/stores/:storeId/mission", handleListStoreMissions);
+app.get("/api/v1/users/:userId/mission", handleListUserMissions);
+
+app.patch("/api/v1/mission/:userId/:missionId", handleChangeMissionState);
 
 // 4. 서버 시작
 app.listen(port, () => {

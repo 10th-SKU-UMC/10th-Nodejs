@@ -35,3 +35,28 @@ export const responseFromMission = ({
     storeName: store.name,
   };
 };
+
+// 미션 상태
+export interface MissionItem {
+  cursor: number;
+  missionDetail: string;
+  point: number;
+}
+
+export interface MissionListResponse {
+  data: Omit<MissionItem, "cursor">[];
+  pagination: {
+    cursor: number | null;
+  };
+}
+
+export const responseFromMissions = (missions: MissionItem[]): MissionListResponse => {
+  const lastMission = missions[missions.length - 1];
+
+  return {
+    data: missions.map(({ cursor, ...rest }) => rest),
+    pagination: {
+      cursor: lastMission ? lastMission.cursor : null,
+    },
+  };
+};

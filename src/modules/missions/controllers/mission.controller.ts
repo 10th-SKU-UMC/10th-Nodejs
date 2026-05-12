@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { bodyToMission } from "../dtos/mission.dto.js";
-import { createMission } from "../services/mission.service.js";
+import { createMission, listStoreMissions } from "../services/mission.service.js";
 
 export const handleCreateMission = async (
   req: Request,
@@ -19,6 +19,24 @@ export const handleCreateMission = async (
       res.status(StatusCodes.NOT_FOUND).json({ error: err.message });
       return;
     }
+    next(err);
+  }
+};
+
+export const handleListStoreMissions = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const storeId = parseInt(req.params.storeId as string);
+    const cursor = req.query.cursor
+      ? parseInt(req.query.cursor as string)
+      : undefined;
+
+    const missions = await listStoreMissions({ storeId, cursor });
+    res.status(StatusCodes.OK).json({ result: missions });
+  } catch (err) {
     next(err);
   }
 };
