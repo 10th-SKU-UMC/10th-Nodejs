@@ -1,0 +1,157 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+ 
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique(map: "email") @db.VarChar(255)
+  name          String   @db.VarChar(100)
+  gender        String   @db.VarChar(15)
+  birth         DateTime @db.Date
+  address       String   @db.VarChar(255)
+  detailAddress String?  @map("detail_address") @db.VarChar(255)
+  phoneNumber   String   @map("phone_number") @db.VarChar(15)
+
+  userPreferCategories UserPreferCategory[]
+  reviews              Review[]
+  userMissions         UserMission[]
+
+  @@map("user")
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(100)
+
+  userPreferCategories UserPreferCategory[]
+
+  @@map("category")
+}
+
+model UserPreferCategory {
+  id             Int          @id @default(autoincrement())
+  user           User         @relation(fields: [userId], references: [id])
+  userId         Int          @map("user_id")
+  category       Category @relation(fields: [categoryId], references: [id])
+  categoryId     Int          @map("category_id")
+
+  @@index([categoryId], map: "f_category_id")
+  @@index([userId], map: "user_id")
+  @@map("user_prefer_category")
+}
+
+
+model Region {
+  id       Int         @id @default(autoincrement())
+  name     String      @db.VarChar(20)
+  level    RegionLevel
+  parentId Int?        @map("parent_id")
+
+  parent   Region?  @relation("RegionToRegion", fields: [parentId], references: [id])
+  children Region[] @relation("RegionToRegion")
+  stores   Store[]
+
+  @@map("region")
+}
+
+model Store {
+  id         Int          @id @default(autoincrement())
+  name       String       @db.VarChar(30)
+  address    String       @db.VarChar(50)
+  status     StoreStatus? @default(OPEN)
+  regionId   Int          @map("region_id")
+  createdAt  DateTime?    @default(now()) @map("created_at") @db.DateTime(6)
+  updatedAt  DateTime?    @default(now()) @updatedAt @map("updated_at") @db.DateTime(6)
+
+  region      Region       @relation(fields: [regionId], references: [id])
+  reviews     Review[]
+  missions    Mission[]
+
+  @@map("store")
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  storeId   Int       @map("store_id")
+  userId    Int       @map("user_id")
+  content   String    @db.Text
+  score     Float     @db.Float
+  createdAt DateTime? @default(now()) @map("created_at") @db.DateTime(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.DateTime(6)
+
+  store        Store         @relation(fields: [storeId], references: [id])
+  user         User          @relation(fields: [userId], references: [id])
+  reviewImages ReviewImage[]
+
+  @@map("review")
+}
+
+model ReviewImage {
+  id        Int       @id @default(autoincrement())
+  reviewId  Int       @map("review_id")
+  imageUrl  String    @map("image_url") @db.Text
+  createdAt DateTime? @default(now()) @map("created_at") @db.DateTime(6)
+
+  review Review @relation(fields: [reviewId], references: [id])
+
+  @@map("review_image")
+}
+
+model Mission {
+  id        Int       @id @default(autoincrement())
+  storeId   Int       @map("store_id")
+  title     String    @db.VarChar(30)
+  content   String    @db.Text
+  point     Int
+  deadline  DateTime  @db.Date
+  createdAt DateTime? @default(now()) @map("created_at") @db.DateTime(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.DateTime(6)
+
+  store        Store         @relation(fields: [storeId], references: [id])
+  userMissions UserMission[]
+
+  @@map("mission")
+}
+
+model UserMission {
+  id        Int                @id @default(autoincrement())
+  userId    Int                @map("user_id")
+  missionId Int                @map("mission_id")
+  status    UserMissionStatus? @default(IN_PROGRESS)
+  createdAt DateTime?          @default(now()) @map("created_at") @db.DateTime(6)
+
+  user    User    @relation(fields: [userId], references: [id])
+  mission Mission @relation(fields: [missionId], references: [id])
+
+  @@map("user_mission")
+}
+
+
+enum RegionLevel {
+  SIDO
+  SIGUNGU
+  DONG
+  RI
+}
+
+enum StoreStatus {
+  OPEN
+  CLOSE
+}
+
+enum UserMissionStatus {
+  IN_PROGRESS
+  COMPLETED
+}

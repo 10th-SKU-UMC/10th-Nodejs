@@ -40,19 +40,15 @@ interface UserResponse {
   preferences: UserPreference[];
 }
 
-export const responseFromUser = ({ user, preferences }: UserResponse) => {
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    gender: user.gender,
-    birth: user.birth,
-    address: user.address,
-    detailAddress: user.detail_address,
-    phoneNumber: user.phone_number,
-    preferences: preferences.map((preference) => ({
-      id: preference.category_id,
-      name: preference.name,
-    })),
-  };
-};
+export const responseFromUser= (data: {user:any, preferences: any[]}): UserResponse => {
+    const perferCategory= data.preferences.map((p)=>p.category.name);
+
+    return {
+        user: {
+            email: data.user.email,
+            name: data.user.name,
+        },
+        preferences: perferCategory,
+    }
+
+}
