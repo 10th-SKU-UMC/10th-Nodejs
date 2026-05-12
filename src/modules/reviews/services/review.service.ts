@@ -26,4 +26,9 @@ export const reviewService = {
       ...data,
     };
   },
+
+  async getMyReviews(user_id: number) {
+    const reviews = await reviewRepository.getReviewsByUserId(user_id);
+    return reviews;
+  },
 };

@@ -29,4 +29,26 @@ export const userMissionService = {
       status: "challenging",
     };
   },
+
+  async getChallengingMissions(user_id: number) {
+    const missions = await userMissionRepository.findChallengingMissionsByUserId(user_id);
+
+    //데이터 없어도 에러 X -> 빈 배열 반환
+    return missions;
+  },
+
+  async completeMission(user_mission_id: number) {
+    // 해당 user_mission이 존재하는지 확인
+    const userMission = await userMissionRepository.findUserMissionById(user_mission_id);
+    if (!userMission) {
+      throw new Error("존재하지 않는 미션입니다.");
+    }
+
+    // 이미 완료된 미션인지 확인
+    if (userMission.status === "complete") {
+      throw new Error("이미 완료된 미션입니다.");
+    }
+
+    return await userMissionRepository.completeMission(user_mission_id);
+  },
 };

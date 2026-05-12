@@ -29,4 +29,12 @@ export const missionService = {
             ...data,
         };
     },
+
+    async getStoreMissions(store_id: number) {
+        const store = await storeRepository.findStoreById(store_id);
+        if (!store) {
+            throw new Error("존재하지 않는 가게입니다.");
+        }
+        return await missionRepository.findMissionsByStoreId(store_id);
+    },
 };

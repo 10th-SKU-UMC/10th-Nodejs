@@ -31,3 +31,17 @@ export const createReview = async (req: Request, res: Response) => {
     }
   }
 };
+export const getMyReviews = async (req: Request, res: Response) => {
+  try {
+    const userId = Number(req.params.userId);
+    const result = await reviewService.getMyReviews(userId);
+
+    res.status(200).json({
+      success: true,
+      message: "내 리뷰 목록 조회 성공",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "조회 실패" });
+  }
+};

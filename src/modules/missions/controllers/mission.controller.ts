@@ -30,3 +30,21 @@ export const createMission = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const getStoreMissions = async (req: Request, res: Response) => {
+  try {
+    const storeId = parseInt(req.params.storeId as string);
+    const result = await missionService.getStoreMissions(storeId);
+    res.status(200).json({
+      success: true,
+      message: "가게 미션 목록 조회 성공",
+      data: result,
+    });
+  } catch (error: any) {
+    if (error.message === "존재하지 않는 가게입니다.") {
+      res.status(400).json({ success: false, message: error.message });
+    } else {
+      res.status(500).json({ success: false, message: "미션 목록 조회 실패" });
+    }
+  }
+};
