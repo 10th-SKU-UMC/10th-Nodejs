@@ -1,6 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
-
+const { BadRequestError, ConflictError, NotFoundError } = require('./common/errors/app.error');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const prisma = new PrismaClient();
@@ -34,25 +34,45 @@ function getListOptions(req) {
   return { limit, cursor };
 }
 
+function success(data) {
+  return {
+    resultType: 'SUCCESS',
+    error: null,
+    data,
+  };
+}
+
+function fail({ errorCode = 'UNKNOWN', message = '서버 오류가 발생했습니다.', data = null } = {}) {
+  return {
+    resultType: 'FAIL',
+    error: {
+      errorCode,
+      message,
+      data,
+    },
+    data: null,
+  };
+}
+
 app.post('/api/v1/regions/:regionId/stores', async (req, res, next) => {
   try {
     const regionId = Number(req.params.regionId);
     const { name, address } = req.body;
 
     if (!isPositiveInt(regionId) || !name || !address) {
-      return res.status(400).json({ message: 'regionId, name, address를 확인해 주세요.' });
+      throw new BadRequestError('regionId, name, address를 확인해 주세요.');
     }
 
     const region = await prisma.region.findUnique({ where: { id: regionId } });
     if (!region) {
-      return res.status(404).json({ message: '존재하지 않는 지역입니다.' });
+      throw new NotFoundError('존재하지 않는 지역입니다.');
     }
 
     const store = await prisma.store.create({
       data: { regionId, name, address },
     });
 
-    return res.status(201).json({ data: store });
+    return res.status(201).json(success(store));
   } catch (err) {
     next(err);
   }
@@ -65,12 +85,12 @@ app.post('/api/v1/stores/:storeId/reviews', async (req, res, next) => {
     const { rating, content } = req.body;
 
     if (!isPositiveInt(storeId) || !isPositiveInt(rating) || rating > 5 || !content) {
-      return res.status(400).json({ message: 'storeId, rating(1~5), content를 확인해 주세요.' });
+      throw new BadRequestError('storeId, rating(1~5), content를 확인해 주세요.');
     }
 
     const store = await prisma.store.findUnique({ where: { id: storeId } });
     if (!store) {
-      return res.status(404).json({ message: '존재하지 않는 가게입니다.' });
+      throw new NotFoundError('존재하지 않는 가게입니다.');
     }
 
     const review = await prisma.review.create({
@@ -83,7 +103,7 @@ app.post('/api/v1/stores/:storeId/reviews', async (req, res, next) => {
       },
     });
 
-    return res.status(201).json({ data: review });
+    return res.status(201).json(success(review));
   } catch (err) {
     next(err);
   }
@@ -95,12 +115,12 @@ app.post('/api/v1/stores/:storeId/missions', async (req, res, next) => {
     const { title, reward, deadline } = req.body;
 
     if (!isPositiveInt(storeId) || !title || !isPositiveInt(reward) || !deadline) {
-      return res.status(400).json({ message: 'storeId, title, reward, deadline을 확인해 주세요.' });
+      throw new BadRequestError('storeId, title, reward, deadline을 확인해 주세요.');
     }
 
     const store = await prisma.store.findUnique({ where: { id: storeId } });
     if (!store) {
-      return res.status(404).json({ message: '존재하지 않는 가게입니다.' });
+      throw new NotFoundError('존재하지 않는 가게입니다.');
     }
 
     const mission = await prisma.mission.create({
@@ -113,7 +133,7 @@ app.post('/api/v1/stores/:storeId/missions', async (req, res, next) => {
       },
     });
 
-    return res.status(201).json({ data: mission });
+    return res.status(201).json(success(mission));
   } catch (err) {
     next(err);
   }
@@ -125,19 +145,19 @@ app.post('/api/v1/missions/:missionId/challenges', async (req, res, next) => {
     const memberId = currentMemberId();
 
     if (!isPositiveInt(missionId)) {
-      return res.status(400).json({ message: 'missionId를 확인해 주세요.' });
+      throw new BadRequestError('missionId를 확인해 주세요.');
     }
 
     const mission = await prisma.mission.findUnique({ where: { id: missionId } });
     if (!mission) {
-      return res.status(404).json({ message: '존재하지 않는 미션입니다.' });
+      throw new NotFoundError('존재하지 않는 미션입니다.');
     }
 
     const activeChallenge = await prisma.memberMission.findFirst({
       where: { memberId, missionId, status: 'IN_PROGRESS' },
     });
     if (activeChallenge) {
-      return res.status(409).json({ message: '이미 도전 중인 미션입니다.' });
+      throw new ConflictError('이미 도전 중인 미션입니다.');
     }
 
     const challenge = await prisma.memberMission.create({
@@ -149,7 +169,7 @@ app.post('/api/v1/missions/:missionId/challenges', async (req, res, next) => {
       },
     });
 
-    return res.status(201).json({ data: challenge });
+    return res.status(201).json(success(challenge));
   } catch (err) {
     next(err);
   }
@@ -161,7 +181,7 @@ app.get('/api/v1/members/me/reviews', async (req, res, next) => {
     const options = getListOptions(req);
 
     if (!options) {
-      return res.status(400).json({ message: 'limit, cursor를 확인해 주세요.' });
+      throw new BadRequestError('limit, cursor를 확인해 주세요.');
     }
 
     const where = { memberId };
@@ -176,7 +196,7 @@ app.get('/api/v1/members/me/reviews', async (req, res, next) => {
       include: { store: true },
     });
 
-    return res.json({ data: reviews });
+    return res.json(success(reviews));
   } catch (err) {
     next(err);
   }
@@ -188,12 +208,12 @@ app.get('/api/v1/stores/:storeId/missions', async (req, res, next) => {
     const options = getListOptions(req);
 
     if (!isPositiveInt(storeId) || !options) {
-      return res.status(400).json({ message: 'storeId, limit, cursor를 확인해 주세요.' });
+      throw new BadRequestError('storeId, limit, cursor를 확인해 주세요.');
     }
 
     const store = await prisma.store.findUnique({ where: { id: storeId } });
     if (!store) {
-      return res.status(404).json({ message: '존재하지 않는 가게입니다.' });
+      throw new NotFoundError('존재하지 않는 가게입니다.');
     }
 
     const where = { storeId };
@@ -207,7 +227,7 @@ app.get('/api/v1/stores/:storeId/missions', async (req, res, next) => {
       take: options.limit,
     });
 
-    return res.json({ data: missions });
+    return res.json(success(missions));
   } catch (err) {
     next(err);
   }
@@ -219,7 +239,7 @@ app.get('/api/v1/members/me/missions', async (req, res, next) => {
     const options = getListOptions(req);
 
     if (!options) {
-      return res.status(400).json({ message: 'limit, cursor를 확인해 주세요.' });
+      throw new BadRequestError('limit, cursor를 확인해 주세요.');
     }
 
     const where = {
@@ -241,7 +261,7 @@ app.get('/api/v1/members/me/missions', async (req, res, next) => {
       },
     });
 
-    return res.json({ data: challenges });
+    return res.json(success(challenges));
   } catch (err) {
     next(err);
   }
@@ -253,14 +273,14 @@ app.patch('/api/v1/missions/:missionId/challenges/complete', async (req, res, ne
     const memberId = currentMemberId();
 
     if (!isPositiveInt(missionId)) {
-      return res.status(400).json({ message: 'missionId를 확인해 주세요.' });
+      throw new BadRequestError('missionId를 확인해 주세요.');
     }
 
     const challenge = await prisma.memberMission.findFirst({
       where: { memberId, missionId, status: 'IN_PROGRESS' },
     });
     if (!challenge) {
-      return res.status(404).json({ message: '진행 중인 미션이 아닙니다.' });
+      throw new NotFoundError('진행 중인 미션이 아닙니다.');
     }
 
     const completedChallenge = await prisma.memberMission.update({
@@ -268,7 +288,7 @@ app.patch('/api/v1/missions/:missionId/challenges/complete', async (req, res, ne
       data: { status: 'COMPLETED' },
     });
 
-    return res.json({ data: completedChallenge });
+    return res.json(success(completedChallenge));
   } catch (err) {
     next(err);
   }
@@ -276,7 +296,15 @@ app.patch('/api/v1/missions/:missionId/challenges/complete', async (req, res, ne
 
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+
+  const statusCode = err.statusCode || 500;
+  return res.status(statusCode).json(
+    fail({
+      errorCode: err.errorCode,
+      message: err.message,
+      data: err.data,
+    }),
+  );
 });
 
 app.listen(PORT, '127.0.0.1', () => {
