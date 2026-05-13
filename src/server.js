@@ -1,11 +1,16 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
+const morgan = require('morgan');
 const { PrismaClient } = require('@prisma/client');
 const { BadRequestError, ConflictError, NotFoundError } = require('./common/errors/app.error');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const prisma = new PrismaClient();
 
+app.use(morgan('dev'));
+app.use(cookieParser());
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 function currentMemberId() {
   return 1;
