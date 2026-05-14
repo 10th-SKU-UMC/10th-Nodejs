@@ -1,44 +1,52 @@
 import dotenv from "dotenv";
-import express, { Express, Request, Response } from "express";
+import express, { Express, Request, Response, NextFunction } from "express";
 import cors from "cors";
-import { handleUserSignUp } from "./modules/users/controllers/user.controller.js";
-import { handleCreateStore } from "./modules/stores/controllers/store.controller.js";
-import { handleCreateReview, handleListMyReviews, handleListStoreReviews} from "./modules/reviews/controllers/review.controller.js";
-import { handleCreateMission, handleListStoreMissions } from "./modules/missions/controllers/mission.controller.js";
-import {
-  handleCompleteUserMission,
-  handleCreateUserMission,
-  handleListInProgressUserMissions,
-} from "./modules/user_missions/controllers/user_mission.controller.js";
+import cookieParser from "cookie-parser";
+import { RegisterRoutes } from "./generated/routes.js";
+import { AppError } from "./common/errors/app.error.js";
 
 // 1. 환경 변수 설정
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
-
-// 2. 미들웨어 설정
-app.use(cors());            // cors 방식 허용                 
-app.use(express.static('public'));    // 정적 파일 접근      
-app.use(express.json());              // request의 본문을 json으로 해석할 수 있도록 함(JSON 형태의 요청 body를 파싱하기 위함)     
-app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
-
-// 3. 기본 라우트
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World! This is TypeScript Server!");
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.error = function ({ errorCode = null, message = null, data = null }) {
+    return this.json({
+      resultType: "FAILED",
+      error: { errorCode, message, data },
+      data: null,
+    });
+  };
+  next();
 });
 
-app.post("/api/v1/users/signup", handleUserSignUp);
-app.post("/api/v1/regions/:regionId/stores", handleCreateStore);
-app.post("/api/v1/stores/:storeId/reviews", handleCreateReview);
-app.post("/api/v1/stores/:storeId/missions", handleCreateMission);
-app.post("/api/v1/users/:userId/missions/:missionId", handleCreateUserMission);
-app.patch("/api/v1/users/:userId/missions/:missionId/complete", handleCompleteUserMission);
+// 2. 미들웨어 설정
+app.use(cors()); // cors 방식 허용
+app.use(express.static("public")); // 정적 파일 접근
+app.use(express.json()); // request의 본문을 json으로 해석할 수 있도록 함(JSON 형태의 요청 body를 파싱하기 위함)
+app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
+app.use(cookieParser());
 
-app.get("/api/v1/stores/:storeId/reviews", handleListStoreReviews);
-app.get("/api/v1/users/:userId/reviews", handleListMyReviews);
-app.get("/api/v1/stores/:storeId/missions", handleListStoreMissions);
-app.get("/api/v1/users/:userId/missions/in-progress", handleListInProgressUserMissions);
+// Express.js에 생성한 엔드 포인트들을 register
+const router = express.Router();
+RegisterRoutes(router); 
+app.use("/api/v1", router);
+
+/**
+ * 전역 오류를 처리하기 위한 미들웨어
+ */
+app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  res.status(err.statusCode || 500).error({
+    errorCode: err.errorCode || "unknown",
+    message: err.message || null,
+    data: err.data || null,
+  });
+});
 
 // 4. 서버 시작
 app.listen(port, () => {
