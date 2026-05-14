@@ -1,36 +1,31 @@
-import { NextFunction, Request, Response } from "express";
-import { StatusCodes } from "http-status-codes";
-import { bodyToMission, CreateMissionRequest } from "../dtos/mission.dto.js";
+import { Body, Controller, Get, Path, Post, Query, Route, Tags } from "tsoa";
+import { ApiResponse, success } from "../../../common/responses/response.js";
+import {
+  CreateMissionRequest,
+  MissionCreateResponse,
+  MissionListResponse,
+} from "../dtos/mission.dto.js";
 import { createMission, listStoreMissions } from "../services/mission.service.js";
 
-export const handleCreateMission = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const storeId = Number(req.params.storeId);
-    const mission = await createMission(bodyToMission(req.body as CreateMissionRequest, storeId));
+@Route("stores/{storeId}/missions")
+@Tags("Missions")
+export class MissionController extends Controller {
+  @Post()
+  public async handleCreateMission(
+    @Path() storeId: number,
+    @Body() body: CreateMissionRequest,
+  ): Promise<ApiResponse<MissionCreateResponse>> {
+    const mission = await createMission(storeId, body);
 
-    res.status(StatusCodes.CREATED).json({ result: mission });
-  } catch (err) {
-    next(err);
+    return success(mission);
   }
-};
 
-export const handleListStoreMissions = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const storeId = parseInt(req.params.storeId as string, 10);
-    const cursor =
-      typeof req.query.cursor === "string"
-        ? parseInt(req.query.cursor, 10)
-        : 0;
-
-
+  @Get()
+  public async handleListStoreMissions(
+    @Path() storeId: number,
+    @Query() cursor: number = 0,
+  ): Promise<ApiResponse<MissionListResponse>> {
     const missions = await listStoreMissions(storeId, cursor);
-
-    res.status(StatusCodes.OK).json(missions);
-  } catch (err) {
-    next(err);
+    return success(missions);
   }
-};
+}

@@ -17,14 +17,16 @@ export const addReview = async (data: any): Promise<number> => {
   }
 };
 
-export const addReviewImage = async (reviewId: number, imageUrl: string): Promise<void> => {
+export const addReviewImage = async (reviewId: number, imageUrl: string): Promise<number> => {
   try {
-    await prisma.reviewImage.create({
+    const reviewImage = await prisma.reviewImage.create({
       data: {
         reviewId,
         imageUrl,
       },
     });
+
+    return reviewImage.id;
   } catch (err) {
     throw new Error(`오류가 발생했어요: ${err}`);
   }

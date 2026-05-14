@@ -1,15 +1,21 @@
-import { NextFunction, Request, Response } from "express";
-import { StatusCodes } from "http-status-codes";
-import { bodyToStore, CreateStoreRequest } from "../dtos/store.dto.js";
+import { Body, Controller, Path, Post, Route, Tags } from "tsoa";
+import { ApiResponse, success } from "../../../common/responses/response.js";
+import {
+  CreateStoreRequest,
+  StoreCreateResponse,
+} from "../dtos/store.dto.js";
 import { createStore } from "../services/store.service.js";
 
-export const handleCreateStore = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const regionId = Number(req.params.regionId);
-    const store = await createStore(bodyToStore(req.body as CreateStoreRequest, regionId));
+@Route("regions/{regionId}/stores")
+@Tags("Stores")
+export class StoreController extends Controller {
+  @Post()
+  public async handleCreateStore(
+    @Path() regionId: number,
+    @Body() body: CreateStoreRequest,
+  ): Promise<ApiResponse<StoreCreateResponse>> {
+    const store = await createStore(regionId,body);
 
-    res.status(StatusCodes.CREATED).json({ result: store });
-  } catch (err) {
-    next(err);
+    return success(store);
   }
-};
+}

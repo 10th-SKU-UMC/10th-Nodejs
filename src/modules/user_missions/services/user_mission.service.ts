@@ -1,29 +1,35 @@
 import {
+  CompletedUserMissionResponse,
   InProgressUserMissionListResponse,
-  responseFromCompletedUserMission,
-  responseFromInProgressUserMissions,
-  responseFromUserMission,
+  UserMissionCreateResponse,
 } from "../dtos/user_mission.dto.js";
 import { addUserMission, getUserMissionByMissionId } from "../../missions/repositories/mission.repository.js";
 import {
   completeUserMission,
   getInProgressUserMissions,
 } from "../repositories/user_mission.repository.js";
+import {
+  DuplicateUserMissionError,
+  InProgressUserMissionNotFoundError,
+} from "../../../common/errors/error.js";
 
-export const createUserMission = async (data: any) => {
-  const existingMission = await getUserMissionByMissionId(data.missionId, data.userId);
+export const createUserMission = async (
+  userId: number,
+  missionId: number,
+): Promise<UserMissionCreateResponse> => {
+  const existingMission = await getUserMissionByMissionId(missionId, userId);
 
   if (existingMission) {
-    throw new Error("이미 도전 중인 미션입니다.");
+    throw new DuplicateUserMissionError(userId, missionId);
   }
 
-  const userMissionId = await addUserMission(data.missionId, data.userId);
+  const userMissionId = await addUserMission(missionId, userId);
 
-  return responseFromUserMission({
-    userMissionId,
+  return {
+    user_mission_id: userMissionId,
     status: "IN_PROGRESS",
-    createdAt: new Date(),
-  });
+    created_at: new Date(),
+  };
 };
 
 export const listInProgressUserMissions = async (
@@ -31,15 +37,44 @@ export const listInProgressUserMissions = async (
   cursor: number
 ): Promise<InProgressUserMissionListResponse> => {
   const userMissions = await getInProgressUserMissions(userId, cursor);
-  return responseFromInProgressUserMissions(userMissions);
+  const lastUserMission = userMissions.at(-1);
+
+  return {
+    data: userMissions.map((userMission) => ({
+      userMissionId: userMission.id,
+      status: userMission.status,
+      createdAt: userMission.createdAt,
+      mission: {
+        missionId: userMission.mission.id,
+        title: userMission.mission.title,
+        content: userMission.mission.content,
+        point: userMission.mission.point,
+        deadline: userMission.mission.deadline,
+        store: {
+          storeId: userMission.mission.store.id,
+          name: userMission.mission.store.name,
+        },
+      },
+    })),
+    pagination: {
+      cursor: lastUserMission?.id ?? null,
+    },
+  };
 };
 
-export const completeInProgressUserMission = async (userId: number, missionId: number) => {
+export const completeInProgressUserMission = async (
+  userId: number,
+  missionId: number,
+): Promise<CompletedUserMissionResponse> => {
   const completedUserMission = await completeUserMission(userId, missionId);
 
   if (!completedUserMission) {
-    throw new Error("진행 중인 미션이 존재하지 않습니다.");
+    throw new InProgressUserMissionNotFoundError(userId, missionId);
   }
 
-  return responseFromCompletedUserMission(completedUserMission);
+  return {
+    user_mission_id: completedUserMission.id,
+    status: completedUserMission.status,
+    created_at: completedUserMission.createdAt,
+  };
 };

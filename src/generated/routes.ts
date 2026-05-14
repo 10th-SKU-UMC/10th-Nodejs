@@ -130,6 +130,9 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "store_id": {"dataType":"double","required":true},
+            "name": {"dataType":"string","required":true},
+            "address": {"dataType":"string","required":true},
+            "status": {"dataType":"string","required":true},
             "created_at": {"dataType":"datetime","required":true},
         },
         "additionalProperties": false,
@@ -160,6 +163,9 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "reviewId": {"dataType":"double","required":true},
+            "score": {"dataType":"double","required":true},
+            "content": {"dataType":"string","required":true},
+            "review_images": {"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"imageUrl":{"dataType":"string","required":true},"imageId":{"dataType":"double","required":true}}},"required":true},
             "createdAt": {"dataType":"datetime","required":true},
         },
         "additionalProperties": false,
@@ -185,21 +191,10 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ReviewItem": {
-        "dataType": "refObject",
-        "properties": {
-            "id": {"dataType":"double","required":true},
-            "content": {"dataType":"string","required":true},
-            "score": {"dataType":"double","required":true},
-            "user": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string","required":true}},"required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ReviewListResponse": {
         "dataType": "refObject",
         "properties": {
-            "data": {"dataType":"array","array":{"dataType":"refObject","ref":"ReviewItem"},"required":true},
+            "data": {"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"user":{"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string","required":true}},"required":true},"score":{"dataType":"double","required":true},"content":{"dataType":"string","required":true},"id":{"dataType":"double","required":true}}},"required":true},
             "pagination": {"dataType":"nestedObjectLiteral","nestedProperties":{"cursor":{"dataType":"union","subSchemas":[{"dataType":"double"},{"dataType":"enum","enums":[null]}],"required":true}},"required":true},
         },
         "additionalProperties": false,
@@ -238,7 +233,11 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "mission_id": {"dataType":"double","required":true},
-            "created_at": {"dataType":"datetime","required":true},
+            "title": {"dataType":"string","required":true},
+            "content": {"dataType":"string","required":true},
+            "point": {"dataType":"double","required":true},
+            "deadline": {"dataType":"datetime","required":true},
+            "createdAt": {"dataType":"datetime","required":true},
         },
         "additionalProperties": false,
     },

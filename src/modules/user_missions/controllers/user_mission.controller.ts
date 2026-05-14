@@ -1,56 +1,47 @@
-import { NextFunction, Request, Response } from "express";
-import { StatusCodes } from "http-status-codes";
-import { bodyToUserMission } from "../dtos/user_mission.dto.js";
+import { Controller, Get, Patch, Path, Post, Query, Route, Tags } from "tsoa";
+import { ApiResponse, success } from "../../../common/responses/response.js";
+import {
+  CompletedUserMissionResponse,
+  InProgressUserMissionListResponse,
+  UserMissionCreateResponse,
+} from "../dtos/user_mission.dto.js";
 import {
   completeInProgressUserMission,
   createUserMission,
   listInProgressUserMissions,
 } from "../services/user_mission.service.js";
 
-export const handleCreateUserMission = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const userId = Number(req.params.userId);
-    const missionId = Number(req.params.missionId);
-    const userMission = await createUserMission(bodyToUserMission(userId, missionId));
+@Route("users/{userId}/missions")
+@Tags("UserMissions")
+export class UserMissionController extends Controller {
+  @Post("{missionId}")
+  public async handleCreateUserMission(
+    @Path() userId: number,
+    @Path() missionId: number,
+  ): Promise<ApiResponse<UserMissionCreateResponse>> {
+    const userMission = await createUserMission(userId, missionId);
 
-    res.status(StatusCodes.CREATED).json({ result: userMission });
-  } catch (err) {
-    next(err);
+    this.setStatus(201);
+    return success(userMission);
   }
-};
 
-export const handleListInProgressUserMissions = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const userId = parseInt(req.params.userId as string, 10);
-    const cursor =
-      typeof req.query.cursor === "string"
-        ? parseInt(req.query.cursor, 10)
-        : 0;
-
+  @Get("in-progress")
+  public async handleListInProgressUserMissions(
+    @Path() userId: number,
+    @Query() cursor: number = 0,
+  ): Promise<ApiResponse<InProgressUserMissionListResponse>> {
     const userMissions = await listInProgressUserMissions(userId, cursor);
 
-    res.status(StatusCodes.OK).json(userMissions);
-  } catch (err) {
-    next(err);
+    return success(userMissions);
   }
-};
 
-export const handleCompleteUserMission = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const userId = parseInt(req.params.userId as string, 10);
-    const missionId = parseInt(req.params.missionId as string, 10);
+  @Patch("{missionId}/complete")
+  public async handleCompleteUserMission(
+    @Path() userId: number,
+    @Path() missionId: number,
+  ): Promise<ApiResponse<CompletedUserMissionResponse>> {
     const userMission = await completeInProgressUserMission(userId, missionId);
 
-    res.status(StatusCodes.OK).json({ result: userMission });
-  } catch (err) {
-    next(err);
+    return success(userMission);
   }
-};
+}

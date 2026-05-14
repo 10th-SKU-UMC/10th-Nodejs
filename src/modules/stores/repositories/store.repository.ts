@@ -1,7 +1,8 @@
 import { prisma } from "../../../db.config.js";
+import { Store } from "../../../generated/prisma/client.js";
 import { StoreStatus } from "../../../generated/prisma/enums.js";
 
-export const addStore = async (data: any): Promise<number> => {
+export const addStore = async (data: any): Promise<Store> => {
   try {
     const store = await prisma.store.create({
       data: {
@@ -12,7 +13,7 @@ export const addStore = async (data: any): Promise<number> => {
       },
     });
 
-    return store.id;
+    return store;
   } catch (err) {
     throw new Error(`오류가 발생했어요: ${err}`);
   }
