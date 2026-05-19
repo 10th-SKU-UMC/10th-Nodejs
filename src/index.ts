@@ -3,98 +3,89 @@ import express, { Express, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import { RegisterRoutes } from "./generated/routes.js";
-import { handleReviewCreate } from "./modules/users/controllers/review.controller.js";
-import { handleMissionCreate } from "./modules/users/controllers/mission.controllers.js";
-import { handleMissionChallenge } from "./modules/users/controllers/memberMission.controller.js";
-import {
-  handleGetReviewList,
-  handleStoreMissions,
-  handleMyMissions,
-  handleCompleteMission,
-} from "./modules/users/controllers/list.controller.js";
+import { RegisterRoutes } from "./generated/routes.js"; // tsoa가 생성한 파일
 import { AppError } from "./common/errors/app.error.js";
+import swaggerUi from "swagger-ui-express";
+import path from "path";
+import fs from "fs";
 
-// 1. 환경 변수 설정
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
-app.use((req: Request, res: Response, next: NextFunction) => {
-  res.error = function ({ errorCode = null, message = null, data = null }) {
-    return this.json({
-      resultType: "FAILED",
-      error: { errorCode, message, data },
-      data: null,
-    });
-  };
-  next();
-});
 
-// 2. 미들웨어 설정
-app.use(cors()); // cors 방식 허용
-app.use(morgan("dev"));
-app.use(cookieParser());
-app.use(express.static("public")); // 정적 파일 접근
-app.use(express.json()); // request의 본문을 json으로 해석할 수 있도록 함(JSON 형태의 요청 body를 파싱하기 위함)
-app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
-
-// 3. 기본 라우트
-const router = express.Router();
-RegisterRoutes(router);
-app.use("/api/v1", router);
-
-app.get("/test", (req, res) => {
-  res.send("Hello!");
-});
-
-// 쿠키 만드는 라우터
-app.get("/setcookie", (req, res) => {
-  // 'myCookie'라는 이름으로 'hello' 값을 가진 쿠키를 생성
-  res.cookie("myCookie", "hello", { maxAge: 60000 }); // 60초간 유효
-  res.send("쿠키가 생성되었습니다!");
-});
-
-// 쿠키 읽는 라우터
-app.get("/getcookie", (req, res) => {
-  // cookie-parser 덕분에 req.cookies 객체에서 바로 꺼내 쓸 수 있음
-  const myCookie = req.cookies.myCookie;
-
-  if (myCookie) {
-    console.log(req.cookies); // { myCookie: 'hello' }
-    res.send(`유노의 쿠키: ${myCookie}`);
-  } else {
-    res.send("쿠키가 없습니다.");
-  }
-});
-
-app.listen(port, () => {
-  console.log("[server]: Server is runniung at <http://localhost>:${port}");
-});
-//app.post("/api/v1/users/signup", handleUserSignUp);
-app.post("/api/v1/restaurants/:restaurantId/reviews", handleReviewCreate);
-app.post("/api/v1/restaurants/:restaurantId/missions", handleMissionCreate);
-app.post("/api/v1/missions/:missionId/challenge", handleMissionChallenge);
-app.post("/api/v1/stores/:storeId/reviews", handleGetReviewList);
-app.post("/api/v1/stores/:storeId/missions", handleStoreMissions);
-app.post("/api/v1/members/missions/ongoing", handleMyMissions);
-app.post(
-  "/api/v1/members/missions/:memberMissionId/complete",
-  handleCompleteMission,
+/**
+ * 1. 보안 및 기본 미들웨어 (최상단 배치)
+ */
+// CORS 설정을 하나로 합치고 가장 위로 올립니다.
+app.use(
+ cors({
+  origin: "http://127.0.0.1:5500", // Live Server 주소 명시
+  credentials: true, // 쿠키나 인증 헤더 허용 시 필수
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+ }),
 );
 
-app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
-  if (res.headersSent) {
-    return next(err);
-  }
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static("public"));
 
-  res.status(err.statusCode || 500).error({
-    errorCode: err.errorCode || "unknown",
-    message: err.message || null,
-    data: err.data || null,
+/**
+ * 2. 공통 응답 커스텀 미들웨어
+ */
+app.use((req: Request, res: Response, next: NextFunction) => {
+ res.error = function ({ errorCode = null, message = null, data = null }) {
+  return this.json({
+   resultType: "FAILED",
+   error: { errorCode, message, data },
+   data: null,
   });
+ };
+ next();
 });
-// 4. 서버 시작
+
+/**
+ * 3. 라우트 설정
+ */
+const router = express.Router();
+const swaggerFile = JSON.parse(
+ fs.readFileSync(path.resolve("dist/swagger.json"), "utf8"),
+);
+
+// tsoa 라우트 등록
+RegisterRoutes(router);
+
+// 버전 접두사 부여
+app.use("/api/v1", router);
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
+
+// 기본 경로 테스트
+app.get("/", (req, res) => res.send("API Server is Running!"));
+
+/**
+ * 4. 에러 핸들링 미들웨어 (최하단 배치)
+ */
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+ if (res.headersSent) return next(err);
+
+ if (err.status === 400 && err.fields) {
+  return res.status(400).error({
+   errorCode: "VALIDATION_ERROR",
+   message: "입력값 검증에 실패했습니다.",
+   data: err.fields,
+  });
+ }
+
+ res.status(err.statusCode || 500).error({
+  errorCode: err.errorCode || "INTERNAL_SERVER_ERROR",
+  message: err.message || "서버 내부 오류가 발생했습니다.",
+  data: err.data || null,
+ });
+});
+
 app.listen(port, () => {
-  console.log(`[server]: Server is running at <http://localhost>:${port}`);
+ console.log(`[server]: Server is running at http://localhost:${port}`);
 });
