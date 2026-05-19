@@ -5,6 +5,7 @@ import {
   Middlewares,
   Post,
   Request,
+  Response,
   Route,
   Tags,
 } from "tsoa";
@@ -13,14 +14,14 @@ import { userSignUp } from "../services/user.service.js";
 import { ApiResponse, success } from "../../../common/responses/response.js";
 import { authorizeUser } from "../../../common/middlewares/auth.middleware.js";
 import { Request as ExpressRequest } from "express";
-import { Response as TsoaResponse } from "tsoa"; 
 
 @Route("users") // 라우트 경로
 @Tags("Users") // Swagger 태그
 export class UserController extends Controller {
+
   @Post("signup") // 엔드포인드 정의
-  @TsoaResponse<ApiResponse<UserSignUpResponse>>(200, "회원가입 성공")
-  @TsoaResponse<ApiResponse<null>>(400, "중복된 이메일 에러")
+  @Response<ApiResponse<UserSignUpResponse>>(200, "회원가입 성공")
+  @Response<ApiResponse<null>>(409, "중복된 이메일 에러")
   public async handleUserSignUp(
     @Body() body: UserSignUpRequest,
   ): Promise<ApiResponse<UserSignUpResponse>> {
@@ -31,6 +32,7 @@ export class UserController extends Controller {
   }
 
   @Get("guest")
+  @Response<ApiResponse<string>>(200, "게스트 페이지 조회 성공")
   public async handleGuestPage(): Promise<ApiResponse<string>> {
     return success(`
             <h1>게스트 페이지</h1>
@@ -42,6 +44,7 @@ export class UserController extends Controller {
   }
 
   @Get("login")
+  @Response<ApiResponse<string>>(200, "로그인 페이지 조회 성공")
   public async handleLoginPage(): Promise<ApiResponse<string>> {
     return success(
       "<h1>로그인 페이지</h1><p>로그인이 필요한 페이지에서 튕겨나오면 여기로 옵니다.</p>",
@@ -50,6 +53,8 @@ export class UserController extends Controller {
 
   @Get("mypage")
   @Middlewares(authorizeUser())
+  @Response<ApiResponse<string>>(200, "마이페이지 조회 성공")
+  @Response<ApiResponse<null>>(401, "로그인 필요")
   public async handleMypage(
     @Request() req: ExpressRequest,
   ): Promise<ApiResponse<string>> {
@@ -61,6 +66,7 @@ export class UserController extends Controller {
   }
 
   @Get("set-login")
+  @Response<ApiResponse<string>>(200, "로그인 쿠키 생성 성공")
   public async handleSetLogin(
     @Request() req: ExpressRequest,
   ): Promise<ApiResponse<string>> {
@@ -71,6 +77,7 @@ export class UserController extends Controller {
   }
 
   @Get("set-logout")
+  @Response<ApiResponse<string>>(200, "로그아웃 성공")
   public async handleSetLogout(
     @Request() req: ExpressRequest,
   ): Promise<ApiResponse<string>> {

@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Path, Post, Query, Route, Tags } from "tsoa";
+import {
+  Body,
+  Controller,
+  Get,
+  Path,
+  Post,
+  Query,
+  Response,
+  Route,
+  Tags,
+} from "tsoa";
 import { ApiResponse, success } from "../../../common/responses/response.js";
 import {
   CreateMissionRequest,
@@ -10,7 +20,10 @@ import { createMission, listStoreMissions } from "../services/mission.service.js
 @Route("stores/{storeId}/missions")
 @Tags("Missions")
 export class MissionController extends Controller {
+  
   @Post()
+  @Response<ApiResponse<MissionCreateResponse>>(200, "미션 생성 성공")
+  @Response<ApiResponse<null>>(500, "미션 생성 실패")
   public async handleCreateMission(
     @Path() storeId: number,
     @Body() body: CreateMissionRequest,
@@ -21,6 +34,8 @@ export class MissionController extends Controller {
   }
 
   @Get()
+  @Response<ApiResponse<MissionListResponse>>(200, "가게 미션 목록 반환")
+  @Response<ApiResponse<null>>(500, "가게 미션 목록 조회 실패")
   public async handleListStoreMissions(
     @Path() storeId: number,
     @Query() cursor: number = 0,

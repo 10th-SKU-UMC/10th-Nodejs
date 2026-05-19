@@ -1,4 +1,14 @@
-import { Controller, Get, Patch, Path, Post, Query, Route, Tags } from "tsoa";
+import {
+  Controller,
+  Get,
+  Patch,
+  Path,
+  Post,
+  Query,
+  Response,
+  Route,
+  Tags,
+} from "tsoa";
 import { ApiResponse, success } from "../../../common/responses/response.js";
 import {
   CompletedUserMissionResponse,
@@ -14,7 +24,10 @@ import {
 @Route("users/{userId}/missions")
 @Tags("UserMissions")
 export class UserMissionController extends Controller {
+
   @Post("{missionId}")
+  @Response<ApiResponse<UserMissionCreateResponse>>(201, "미션 참여 성공")
+  @Response<ApiResponse<null>>(409, "중복 참여 에러")
   public async handleCreateUserMission(
     @Path() userId: number,
     @Path() missionId: number,
@@ -26,6 +39,8 @@ export class UserMissionController extends Controller {
   }
 
   @Get("in-progress")
+  @Response<ApiResponse<InProgressUserMissionListResponse>>(200, "참여중인 미션목록 반환")
+  @Response<ApiResponse<null>>(500, "진행 중인 미션 목록 조회 실패")
   public async handleListInProgressUserMissions(
     @Path() userId: number,
     @Query() cursor: number = 0,
@@ -36,6 +51,8 @@ export class UserMissionController extends Controller {
   }
 
   @Patch("{missionId}/complete")
+  @Response<ApiResponse<CompletedUserMissionResponse>>(200, "미션 완료 처리 성공")
+  @Response<ApiResponse<null>>(404, "진행중인 미션 없음")
   public async handleCompleteUserMission(
     @Path() userId: number,
     @Path() missionId: number,
