@@ -1,12 +1,11 @@
 import { prisma } from "../../../db.config.js";
 
-// ✅ 맨 위에 추가
 export const addUser = async (data: {
   email: string;
   name: string;
   gender: string;
   birth: Date;
-  address: string;
+  address: string,
   detailAddress?: string;
   phoneNumber: string;
 }) => {
@@ -16,7 +15,13 @@ export const addUser = async (data: {
 
   if (existingUser) return null;
 
-  const user = await prisma.user.create({ data });
+  const user = await prisma.user.create({ 
+    data: {
+      ...data,
+      address: data.address ?? "", //null말고 빈 문자열
+      detailAddress: data.detailAddress ?? null, //null허용
+    }
+  });
   return user.id;
 };
 
