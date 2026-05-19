@@ -13,11 +13,14 @@ import { userSignUp } from "../services/user.service.js";
 import { ApiResponse, success } from "../../../common/responses/response.js";
 import { authorizeUser } from "../../../common/middlewares/auth.middleware.js";
 import { Request as ExpressRequest } from "express";
+import { Response as TsoaResponse } from "tsoa"; 
 
 @Route("users") // 라우트 경로
 @Tags("Users") // Swagger 태그
 export class UserController extends Controller {
   @Post("signup") // 엔드포인드 정의
+  @TsoaResponse<ApiResponse<UserSignUpResponse>>(200, "회원가입 성공")
+  @TsoaResponse<ApiResponse<null>>(400, "중복된 이메일 에러")
   public async handleUserSignUp(
     @Body() body: UserSignUpRequest,
   ): Promise<ApiResponse<UserSignUpResponse>> {
