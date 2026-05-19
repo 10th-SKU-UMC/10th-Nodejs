@@ -1,55 +1,51 @@
-import { NextFunction, Request, Response } from "express";
-import { StatusCodes } from "http-status-codes";
-import { bodyToReview, CreateReviewRequest } from "../dtos/review.dto.js";
-import { createReview, listMyReviews, listStoreReviews } from "../services/review.service.js";
+import { Body, Controller, Get, Path, Post, Query, Route, Tags } from "tsoa";
+import { ApiResponse, success } from "../../../common/responses/response.js";
+import {
+  CreateReviewRequest,
+  MyReviewListResponse,
+  ReviewCreateResponse,
+  ReviewListResponse,
+} from "../dtos/review.dto.js";
+import {
+  createReview,
+  listMyReviews,
+  listStoreReviews,
+} from "../services/review.service.js";
 
-export const handleCreateReview = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const storeId = Number(req.params.storeId);
-    const review = await createReview(bodyToReview(req.body as CreateReviewRequest, storeId));
-
-    res.status(StatusCodes.CREATED).json({ result: review });
-  } catch (err) {
-    next(err);
+@Route("stores/{storeId}/reviews")
+@Tags("Reviews")
+export class StoreReviewController extends Controller {
+  @Post()
+  public async handleCreateReview(
+    @Path() storeId: number,
+    @Body() body: CreateReviewRequest,
+  ): Promise<ApiResponse<ReviewCreateResponse>> {
+    const review = await createReview(storeId, body);
+    
+    return success(review);
   }
-};
 
-export const handleListStoreReviews = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const storeId = parseInt(req.params.storeId as string, 10);
-    const cursor =
-    typeof req.query.cursor === "string"
-      ? parseInt(req.query.cursor, 10)
-      : 0;
-
+  @Get()
+  public async handleListStoreReviews(
+    @Path() storeId: number,
+    @Query() cursor: number = 0,
+  ): Promise<ApiResponse<ReviewListResponse>> {
     const reviews = await listStoreReviews(storeId, cursor);
 
-    res.status(StatusCodes.OK).json(reviews);
-  } catch (err) {
-    next(err);
+    return success(reviews);
   }
-};
+}
 
-export const handleListMyReviews = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const userId = parseInt(req.params.userId as string, 10);
-    const cursor =
-      typeof req.query.cursor === "string"
-        ? parseInt(req.query.cursor, 10)
-        : 0;
-
+@Route("users/{userId}/reviews")
+@Tags("Reviews")
+export class MyReviewController extends Controller {
+  @Get()
+  public async handleListMyReviews(
+    @Path() userId: number,
+    @Query() cursor: number = 0,
+  ): Promise<ApiResponse<MyReviewListResponse>> {
     const reviews = await listMyReviews(userId, cursor);
 
-    res.status(StatusCodes.OK).json(reviews);
-  } catch (err) {
-    next(err);
+    return success(reviews);
   }
-};
+}

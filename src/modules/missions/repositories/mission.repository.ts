@@ -1,7 +1,8 @@
 import { prisma } from "../../../db.config.js";
 import { UserMissionStatus } from "../../../generated/prisma/enums.js";
+import type { Mission } from "../../../generated/prisma/client.js";
 
-export const addMission = async (data: any): Promise<number> => {
+export const addMission = async (data: any): Promise<Mission> => {
   try {
     const mission = await prisma.mission.create({
       data: {
@@ -13,7 +14,7 @@ export const addMission = async (data: any): Promise<number> => {
       },
     });
 
-    return mission.id;
+    return mission;
   } catch (err) {
     throw new Error(`오류가 발생했어요: ${err}`);
   }

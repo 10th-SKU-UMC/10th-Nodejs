@@ -1,32 +1,49 @@
-import { responseFromReview } from "../dtos/review.dto.js";
+import {
+  CreateReviewRequest,
+  ReviewCreateResponse,
+  MyReviewListResponse,
+  ReviewListResponse,
+} from "../dtos/review.dto.js";
 import { addReview, addReviewImage } from "../repositories/review.repository.js";
 import { getStoreById } from "../../stores/repositories/store.repository.js";
-import {
-  MyReviewListResponse,
-  responseFromMyReviews,
-  ReviewListResponse,
-  responseFromReviews,
-} from "../dtos/review.dto.js";
 import { getStoreReviews, getUserReviews } from "../repositories/review.repository.js";
+import { StoreNotFoundError } from "../../../common/errors/error.js";
 
-
-export const createReview = async (data: any) => {
-  const store = await getStoreById(data.storeId);
+export const createReview = async (
+  storeId: number,
+  data: CreateReviewRequest,
+): Promise<ReviewCreateResponse> => {
+  const store = await getStoreById(storeId);
 
   if (!store) {
-    throw new Error("리뷰를 작성할 가게가 존재하지 않습니다.");
+    throw new StoreNotFoundError(storeId);
   }
 
-  const reviewId = await addReview(data);
-
-  for (const reviewImage of data.reviewImages) {
-    await addReviewImage(reviewId, reviewImage);
-  }
-
-  return responseFromReview({
-    reviewId,
-    createdAt: new Date(),
+  const reviewId = await addReview({
+    storeId,
+    userId: 1,
+    score: data.score,
+    content: data.content,
   });
+
+  const reviewImages = data.review_images || [];
+  const savedReviewImages = [];
+
+  for (const reviewImage of reviewImages) {
+    const reviewImageId = await addReviewImage(reviewId, reviewImage);
+    savedReviewImages.push({
+      imageId: reviewImageId,
+      imageUrl: reviewImage,
+    });
+  }
+
+  return <ReviewCreateResponse>{
+    reviewId,
+    score: data.score,
+    content: data.content,
+    review_images: savedReviewImages,
+    createdAt: new Date(),
+  };
 };
 
 export const listStoreReviews = async (
@@ -34,7 +51,14 @@ export const listStoreReviews = async (
   cursor: number
 ): Promise<ReviewListResponse> => {
   const reviews = await getStoreReviews(storeId, cursor);
-  return responseFromReviews(reviews);
+  const lastReview = reviews.at(-1);
+
+  return <ReviewListResponse>{
+    data: reviews,
+    pagination: {
+      cursor: lastReview?.id ?? null,
+    },
+  };
 };
 
 export const listMyReviews = async (
@@ -42,5 +66,25 @@ export const listMyReviews = async (
   cursor: number
 ): Promise<MyReviewListResponse> => {
   const reviews = await getUserReviews(userId, cursor);
-  return responseFromMyReviews(reviews);
+  const lastReview = reviews.at(-1);
+
+  return <MyReviewListResponse>{
+    data: reviews.map((review) => ({
+      reviewId: review.id,
+      content: review.content,
+      score: review.score,
+      createdAt: review.createdAt,
+      store: {
+        storeId: review.store.id,
+        name: review.store.name,
+      },
+      images: review.reviewImages.map((image) => ({
+        imageId: image.id,
+        imageUrl: image.imageUrl,
+      })),
+    })),
+    pagination: {
+      cursor: lastReview?.id ?? null,
+    },
+  };
 };
