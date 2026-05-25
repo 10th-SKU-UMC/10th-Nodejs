@@ -1,11 +1,3 @@
-function success(data) {
-  return {
-    resultType: 'SUCCESS',
-    error: null,
-    data,
-  };
-}
-
 class AppError extends Error {
   constructor({ statusCode = 500, errorCode = 'UNKNOWN', message, data = null }) {
     super(message);
@@ -34,8 +26,8 @@ class ConflictError extends AppError {
 }
 
 module.exports = {
-    AppError,
-    BadRequestError,
-    NotFoundError,
-    ConflictError,
-  };
+  AppError,
+  BadRequestError,
+  NotFoundError,
+  ConflictError,
+};
