@@ -1,4 +1,12 @@
-import { Body, Controller, Path, Post, Route, Tags } from "tsoa";
+import {
+  Body,
+  Controller,
+  Path,
+  Post,
+  Response,
+  Route,
+  Tags,
+} from "tsoa";
 import { ApiResponse, success } from "../../../common/responses/response.js";
 import {
   CreateStoreRequest,
@@ -9,12 +17,15 @@ import { createStore } from "../services/store.service.js";
 @Route("regions/{regionId}/stores")
 @Tags("Stores")
 export class StoreController extends Controller {
+
   @Post()
+  @Response<ApiResponse<StoreCreateResponse>>(200, "가게 생성 성공")
+  @Response<ApiResponse<null>>(500, "가게 생성 실패")
   public async handleCreateStore(
     @Path() regionId: number,
     @Body() body: CreateStoreRequest,
   ): Promise<ApiResponse<StoreCreateResponse>> {
-    const store = await createStore(regionId,body);
+    const store = await createStore(regionId, body);
 
     return success(store);
   }
