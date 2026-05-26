@@ -1,0 +1,13 @@
+{
+    "entryFile": "src/app.js",
+    "noImplicitAdditionalProperties": "throw-on-extras",
+    "controllerPathGlobs": ["src/**/*.tsoa.controller.ts"],
+    "spec": {
+      "outputDirectory": "src/swagger",
+      "specVersion": 3,
+      "basePath": "/api/v1"
+    },
+    "routes": {
+      "routesDir": "src/generated"
+    }
+  }
