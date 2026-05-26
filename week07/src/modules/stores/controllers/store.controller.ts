@@ -1,71 +1,54 @@
-import { Request, Response, NextFunction } from "express";
-import { StatusCodes } from "http-status-codes";
+import { Body, Controller, Get, Path, Post, Query, Route, Tags } from "tsoa";
 import { addReviewService, addStoreService, listStoreReviews } from "../services/store.service";
 
-//1-1.지역에 가게 추가하기
-export const addStore = async(req: Request, res: Response, next: NextFunction) => {
-    try{
-        const {regionId} = req.params; //url에 적힌 지역코드 가져오기
-        const storeData = req.body;
+@Route("stores")
+@Tags("가게")
+export class StoreController extends Controller {
+    
+    // 1-1. 지역에 가게 추가하기
+    @Post("regions/{regionId}")
+    public async addStore(
+        @Path() regionId: number,
+        @Body() storeData: any
+    ): Promise<any> {
         console.log("==특정 지역 가게 추가 요청==");
         console.log("요청 지역 번호 :", regionId);
-        console.log("요청 가게 번호 :", req.body);
+        console.log("요청 가게 데이터 :", storeData);
 
-        const newStoreId = await addStoreService(Number(regionId), storeData);
+        const newStoreId = await addStoreService(regionId, storeData);
 
-        res.status(StatusCodes.OK).json({
+        return {
             isSuccess: true,
             message: `생성완료`,
-            data: req.body
-        });
-    } catch (error) {
-        console.error("가게 추가 중 에러 발생: ",error);
-        res.status(400).json({
-            isSuccess: false,
-            message: "추가 중 오류 발생"
-        });
-    };
-}
+            data: storeData
+        };
+    }
 
-//1-2.가게에 리뷰 추가하기
-export const addReviews = async(req: Request, res: Response, next: NextFunction) => {
-    try{
-        const {storeId} = req.params;
-        const reviewData = req.body;
+    // 1-2. 가게에 리뷰 추가하기
+    @Post("{storeId}/reviews")
+    public async addReviews(
+        @Path() storeId: number,
+        @Body() reviewData: any
+    ): Promise<any> {
         console.log("===가게에 리뷰 추가 요청==");
         console.log("요청 가게 번호 :", storeId);
-        const newReviewId = await addReviewService(Number(storeId), reviewData);
-        res.status(StatusCodes.OK).json({
+        
+        const newReviewId = await addReviewService(storeId, reviewData);
+        
+        return {
             isSuccess: true,
             message: `생성완료`,
-            data: req.body
-        });
-    } catch(error: any) {
-        console.error("리뷰 추가 중 에러 발생:",error);
-        res.status(400).json({
-            isSuccess: false,
-            message: error.message || "리뷰 추가 중 오류 발생"
-        });
-    };
+            data: reviewData
+        };
+    }
+
+    // 목록조회
+    @Get("{storeId}/reviews")
+    public async handleListStoreReviews(
+        @Path() storeId: number,
+        @Query() cursor?: number
+    ): Promise<any> {
+        const reviews = await listStoreReviews(storeId, cursor || 0);
+        return reviews;
+    }
 }
-
-//목록조회
-export const handleListStoreReviews = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const storeId = parseInt(req.params.storeId as string, 10);
-    const cursor =
-    typeof req.query.cursor === "string"
-      ? parseInt(req.query.cursor, 10)
-      : 0;
-
-    const reviews = await listStoreReviews(storeId, cursor);
-
-    res.status(StatusCodes.OK).json(reviews);
-  } catch (err) {
-    next(err);
-  }
-};

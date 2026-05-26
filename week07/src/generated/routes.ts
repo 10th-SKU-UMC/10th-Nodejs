@@ -5,6 +5,10 @@ import type { TsoaRoute } from '@tsoa/runtime';
 import {  fetchMiddlewares, ExpressTemplateService } from '@tsoa/runtime';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UserController } from './../modules/users/controllers/user.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { StoreController } from './../modules/stores/controllers/store.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { MissionController } from './../modules/missions/controllers/mission.controller';
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
 
 
@@ -263,6 +267,161 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'handleListUserReviews',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsStoreController_addStore: Record<string, TsoaRoute.ParameterSchema> = {
+                regionId: {"in":"path","name":"regionId","required":true,"dataType":"double"},
+                storeData: {"in":"body","name":"storeData","required":true,"dataType":"any"},
+        };
+        app.post('/stores/regions/:regionId',
+            ...(fetchMiddlewares<RequestHandler>(StoreController)),
+            ...(fetchMiddlewares<RequestHandler>(StoreController.prototype.addStore)),
+
+            async function StoreController_addStore(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsStoreController_addStore, request, response });
+
+                const controller = new StoreController();
+
+              await templateService.apiHandler({
+                methodName: 'addStore',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsStoreController_addReviews: Record<string, TsoaRoute.ParameterSchema> = {
+                storeId: {"in":"path","name":"storeId","required":true,"dataType":"double"},
+                reviewData: {"in":"body","name":"reviewData","required":true,"dataType":"any"},
+        };
+        app.post('/stores/:storeId/reviews',
+            ...(fetchMiddlewares<RequestHandler>(StoreController)),
+            ...(fetchMiddlewares<RequestHandler>(StoreController.prototype.addReviews)),
+
+            async function StoreController_addReviews(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsStoreController_addReviews, request, response });
+
+                const controller = new StoreController();
+
+              await templateService.apiHandler({
+                methodName: 'addReviews',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsStoreController_handleListStoreReviews: Record<string, TsoaRoute.ParameterSchema> = {
+                storeId: {"in":"path","name":"storeId","required":true,"dataType":"double"},
+                cursor: {"in":"query","name":"cursor","dataType":"double"},
+        };
+        app.get('/stores/:storeId/reviews',
+            ...(fetchMiddlewares<RequestHandler>(StoreController)),
+            ...(fetchMiddlewares<RequestHandler>(StoreController.prototype.handleListStoreReviews)),
+
+            async function StoreController_handleListStoreReviews(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsStoreController_handleListStoreReviews, request, response });
+
+                const controller = new StoreController();
+
+              await templateService.apiHandler({
+                methodName: 'handleListStoreReviews',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMissionController_addMission: Record<string, TsoaRoute.ParameterSchema> = {
+                storeId: {"in":"path","name":"storeId","required":true,"dataType":"double"},
+                missionData: {"in":"body","name":"missionData","required":true,"dataType":"any"},
+        };
+        app.post('/missions/stores/:storeId',
+            ...(fetchMiddlewares<RequestHandler>(MissionController)),
+            ...(fetchMiddlewares<RequestHandler>(MissionController.prototype.addMission)),
+
+            async function MissionController_addMission(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMissionController_addMission, request, response });
+
+                const controller = new MissionController();
+
+              await templateService.apiHandler({
+                methodName: 'addMission',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMissionController_handleListStoreMissions: Record<string, TsoaRoute.ParameterSchema> = {
+                storeId: {"in":"path","name":"storeId","required":true,"dataType":"double"},
+                cursor: {"in":"query","name":"cursor","dataType":"double"},
+        };
+        app.get('/missions/stores/:storeId',
+            ...(fetchMiddlewares<RequestHandler>(MissionController)),
+            ...(fetchMiddlewares<RequestHandler>(MissionController.prototype.handleListStoreMissions)),
+
+            async function MissionController_handleListStoreMissions(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMissionController_handleListStoreMissions, request, response });
+
+                const controller = new MissionController();
+
+              await templateService.apiHandler({
+                methodName: 'handleListStoreMissions',
                 controller,
                 response,
                 next,

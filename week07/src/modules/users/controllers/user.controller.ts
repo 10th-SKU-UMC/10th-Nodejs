@@ -22,7 +22,7 @@ import { success} from "../../../common/response/response";
 
 
 @Route("users") //라우트경로
-@Tags("users") //swagger태그
+@Tags("유저") //swagger태그
 export class UserController extends Controller{
     @Post("signup") //엔드포인트 정의
     public async handleUserSignUp(
@@ -70,16 +70,12 @@ export class UserController extends Controller{
     }
     @Get("{userId}/reviews")
     public async handleListUserReviews(
-        @Path() userId: number,    // 알아서 req.params.userId를 숫자로 빼옵니다!
-        @Query() cursor?: number   // 알아서 req.query.cursor를 숫자로 빼옵니다!
+        @Path() userId: number,
+        @Query() cursor?: number
     ): Promise<any> {
         console.log("===사용자의 리뷰 조회 요청===");
         console.log("요청 유저 번호:", userId);
-
-        // 서비스 로직 호출 (이미 숫자로 바뀌어서 Number() 쓸 필요 없음!)
         const reviews = await listUserReviewsService(userId, cursor);
-
-        // 성공 규격으로 감싸서 리턴! (과제 필수 사항)
         return success(reviews);
     }
 }
