@@ -6,6 +6,7 @@
     "outDir": "./dist",           // 컴파일된 결과물(.js)이 저장될 폴더예요.
     // 데코레이터 문법 사용 여부
     "experimentalDecorators": true,
+    "noImplicitAny": false,
 
     /* 언어 및 모듈 설정 (4주차에서 배운 ESM 방식을 유지해요!) */
     "target": "ESNext",           

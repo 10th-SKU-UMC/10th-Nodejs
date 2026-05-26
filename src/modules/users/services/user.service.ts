@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { UserSignUpRequest, UserSignUpResponse } from "../dtos/user.dto"; //인터페이스 가져오기 
 import {
   addUser,
@@ -8,6 +9,8 @@ import {
 import { DuplicateUserEmailError } from "../../../common/errors/errors";
 
 export const userSignUp = async (data: UserSignUpRequest): Promise<UserSignUpResponse> => {
+  const hashedPassword = await bcrypt.hash(data.password, 10);  
+
   const joinUserId = await addUser({
     email: data.email,
     name: data.name,
@@ -16,6 +19,7 @@ export const userSignUp = async (data: UserSignUpRequest): Promise<UserSignUpRes
     address: data.address ?? "",
     detailAddress: data.detailAddress,
     phoneNumber: data.phoneNumber,
+    password: hashedPassword,
   });
 
   if (joinUserId === null) {

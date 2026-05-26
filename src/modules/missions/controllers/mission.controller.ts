@@ -1,50 +1,34 @@
-import { Request, Response } from "express";
+import { Body, Controller, Get, Path, Post, Route, Tags, Response } from "tsoa";
 import { missionService } from "../services/mission.service";
+import { CreateMissionRequest } from "../dtos/mission.dto";
 
-export const createMission = async (req: Request, res: Response) => {
-  try {
-    const data = req.body;
+import { ErrorResponse } from "../../../common/dtos/error.dto";
 
-    const result = await missionService.createMission(data);
+@Route("missions")
+@Tags("Missions")
+export class MissionController extends Controller {
 
-    res.status(201).json({
-      success: true,
-      message: "미션 생성 성공",
-      data: result,
-    });
-  } catch (error: any) {
-    if (
-      error.message === "존재하지 않는 가게입니다." ||
-      error.message === "미션 제목, 보상 포인트, 마감일을 입력해주세요." ||
-      error.message === "보상 포인트는 0보다 커야 합니다."
-    ) {
-      res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        message: "미션 생성 실패",
-      });
-    }
+  /**
+   * 미션을 생성합니다.
+   */
+  @Post("/")
+  @Response<ErrorResponse>(400, "잘못된 요청 (존재하지 않는 가게 / 입력값 오류)")
+  @Response<ErrorResponse>(500, "서버 오류")
+  public async createMission(
+    @Body() body: CreateMissionRequest
+  ): Promise<any> {
+    return await missionService.createMission(body);
   }
-};
 
-export const getStoreMissions = async (req: Request, res: Response) => {
-  try {
-    const storeId = parseInt(req.params.storeId as string);
-    const result = await missionService.getStoreMissions(storeId);
-    res.status(200).json({
-      success: true,
-      message: "가게 미션 목록 조회 성공",
-      data: result,
-    });
-  } catch (error: any) {
-    if (error.message === "존재하지 않는 가게입니다.") {
-      res.status(400).json({ success: false, message: error.message });
-    } else {
-      res.status(500).json({ success: false, message: "미션 목록 조회 실패" });
-    }
+  /**
+   * 특정 가게의 미션 목록을 조회합니다.
+   */
+  @Get("store/{storeId}")
+  @Response<ErrorResponse>(400, "존재하지 않는 가게")
+  @Response<ErrorResponse>(500, "서버 오류")
+  public async getStoreMissions(
+    @Path() storeId: number
+  ): Promise<any> {
+    return await missionService.getStoreMissions(storeId);
   }
-};
+}

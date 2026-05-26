@@ -8,6 +8,7 @@ export const addUser = async (data: {
   address: string,
   detailAddress?: string;
   phoneNumber: string;
+  password: string;
 }) => {
   const existingUser = await prisma.user.findFirst({
     where: { email: data.email },

@@ -1,47 +1,33 @@
-import { Request, Response } from "express";
+import { Body, Controller, Get, Path, Post, Route, Tags, Response } from "tsoa";
 import { reviewService } from "../services/review.service";
+import { CreateReviewRequest } from "../dtos/review.dto";
 
-export const createReview = async (req: Request, res: Response) => {
-  try {
-    const data = req.body;
+import { ErrorResponse } from "../../../common/dtos/error.dto";
 
-    const result = await reviewService.createReview(data);
+@Route("reviews")
+@Tags("Reviews")
+export class ReviewController extends Controller {
 
-    res.status(201).json({
-      success: true,
-      message: "리뷰 생성 성공",
-      data: result,
-    });
-  } catch (error: any) {
-    // 가게가 없거나 입력값 오류면 400
-    if (
-      error.message === "존재하지 않는 가게입니다." ||
-      error.message === "별점과 리뷰 내용을 입력해주세요." ||
-      error.message === "별점은 1~5 사이여야 합니다."
-    ) {
-      res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        message: "리뷰 생성 실패",
-      });
-    }
+  /**
+   * 리뷰를 생성합니다.
+   */
+  @Post("/")
+  @Response<ErrorResponse>(400, "잘못된 요청 (존재하지 않는 가게 / 입력값 오류)")
+  @Response<ErrorResponse>(500, "서버 오류")
+  public async createReview(
+    @Body() body: CreateReviewRequest
+  ): Promise<any> {
+    return await reviewService.createReview(body);
   }
-};
-export const getMyReviews = async (req: Request, res: Response) => {
-  try {
-    const userId = Number(req.params.userId);
-    const result = await reviewService.getMyReviews(userId);
 
-    res.status(200).json({
-      success: true,
-      message: "내 리뷰 목록 조회 성공",
-      data: result,
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "조회 실패" });
+  /**
+   * 내 리뷰 목록을 조회합니다.
+   */
+  @Get("user/{userId}")
+  @Response<ErrorResponse>(500, "서버 오류")
+  public async getMyReviews(
+    @Path() userId: number
+  ): Promise<any> {
+    return await reviewService.getMyReviews(userId);
   }
-};
+}

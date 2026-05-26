@@ -1,78 +1,45 @@
-import { Request, Response } from "express";
+import { Body, Controller, Get, Patch, Path, Post, Route, Tags, Response } from "tsoa";
 import { userMissionService } from "../services/user_mission.service";
+import { CreateUserMissionRequest } from "../dtos/user_mission.dto";
 
-export const createUserMission = async (req: Request, res: Response) => {
-  try {
-    const data = req.body;
+import { ErrorResponse } from "../../../common/dtos/error.dto";
 
-    const result = await userMissionService.createUserMission(data);
+@Route("user-missions")
+@Tags("UserMissions")
+export class UserMissionController extends Controller {
 
-    res.status(201).json({
-      success: true,
-      message: "미션 도전 성공",
-      data: result,
-    });
-  } catch (error: any) {
-    if (
-      error.message === "존재하지 않는 미션입니다." ||
-      error.message === "이미 도전 중인 미션입니다."
-    ) {
-      res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        message: "미션 도전 실패",
-      });
-    }
+  /**
+   * 미션에 도전합니다.
+   */
+  @Post("/")
+  @Response<ErrorResponse>(400, "잘못된 요청 (존재하지 않는 미션 / 이미 도전 중)")
+  @Response<ErrorResponse>(500, "서버 오류")
+  public async createUserMission(
+    @Body() body: CreateUserMissionRequest
+  ): Promise<any> {
+    return await userMissionService.createUserMission(body);
   }
-};
 
-export const getChallengingMissions = async (req: Request, res: Response) => {
-  try {
-    const user_id = Number(req.params.userId); // URL에서 userId 꺼내기
-
-    const result = await userMissionService.getChallengingMissions(user_id);
-
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "미션 목록 조회 실패",
-    });
+  /**
+   * 도전 중인 미션 목록을 조회합니다.
+   */
+  @Get("user/{userId}")
+  @Response<ErrorResponse>(500, "서버 오류")
+  public async getChallengingMissions(
+    @Path() userId: number
+  ): Promise<any> {
+    return await userMissionService.getChallengingMissions(userId);
   }
-};
 
-export const completeMission = async (req: Request, res: Response) => {
-  try {
-    const user_mission_id = Number(req.params.userMissionId);
-
-    const result = await userMissionService.completeMission(user_mission_id);
-
-    res.status(200).json({
-      success: true,
-      message: "미션 완료 처리 성공",
-      data: result,
-    });
-  } catch (error: any) {
-    if (
-      error.message === "존재하지 않는 미션입니다." ||
-      error.message === "이미 완료된 미션입니다."
-    ) {
-      res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        message: "미션 완료 처리 실패",
-      });
-    }
+  /**
+   * 미션을 완료 처리합니다.
+   */
+  @Patch("{userMissionId}/complete")
+  @Response<ErrorResponse>(400, "잘못된 요청 (존재하지 않는 미션 / 이미 완료)")
+  @Response<ErrorResponse>(500, "서버 오류")
+  public async completeMission(
+    @Path() userMissionId: number
+  ): Promise<any> {
+    return await userMissionService.completeMission(userMissionId);
   }
-};
+}

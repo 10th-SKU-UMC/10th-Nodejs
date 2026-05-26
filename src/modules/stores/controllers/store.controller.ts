@@ -1,42 +1,33 @@
-import { Request, Response, NextFunction } from "express";
-import { StatusCodes } from "http-status-codes";
-import { storeService } from "../services/store.service";
-import { listStoreReviews } from "../services/store.service";
+import { Body, Controller, Get, Path, Post, Query, Route, Tags, Response } from "tsoa";
+import { storeService, listStoreReviews } from "../services/store.service";
+import { CreateStoreRequest } from "../dtos/store.dto";
 
-export const createStore = async (req: Request, res: Response) => {
-  try {
-    const result = await storeService.createStore(req.body);
+import { ErrorResponse } from "../../../common/dtos/error.dto";
 
-    return res.status(201).json({
-      success: true,
-      message: "가게 생성 성공",
-      data: result,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      success: false,
-      message: "가게 생성 실패",
-    });
+@Route("stores")
+@Tags("Stores")
+export class StoreController extends Controller {
+
+  /**
+   * 가게를 생성합니다.
+   */
+  @Post("/")
+  @Response<ErrorResponse>(500, "서버 오류")
+  public async createStore(
+    @Body() body: CreateStoreRequest
+  ): Promise<any> {
+    return await storeService.createStore(body);
   }
-};
 
-export const handleListStoreReviews = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const storeId = parseInt(req.params.storeId as string, 10);
-    const cursor = 
-    typeof req.query.cursor === "string"
-      ? parseInt(req.query.cursor, 10)
-      : 0;
-
-    const reviews = await listStoreReviews(storeId, cursor);
-
-    res.status(StatusCodes.OK).json(reviews);
-  } catch (err) {
-    next(err);
+  /**
+   * 특정 가게의 리뷰 목록을 커서 기반 페이지네이션으로 조회합니다.
+   */
+  @Get("{storeId}/reviews")
+  @Response<ErrorResponse>(500, "서버 오류")
+  public async listStoreReviews(
+    @Path() storeId: number,
+    @Query() cursor?: number
+  ): Promise<any> {
+    return await listStoreReviews(storeId, cursor ?? 0);
   }
-};
+}

@@ -9,6 +9,7 @@ export interface UserSignUpRequest {
   address?: string;
   detailAddress?: string;
   phoneNumber: string;
+  password: string;
   preferences: number[];
 }
 
