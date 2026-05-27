@@ -6,6 +6,7 @@ declare global {
         message?: string | null;
         data?: any | null;
       }) => void;
+      success: (data: any) => void;  // ← 이거 추가
     }
   }
 }
