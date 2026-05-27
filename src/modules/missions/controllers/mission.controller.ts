@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Middlewares,
   Path,
   Post,
   Query,
@@ -16,13 +17,16 @@ import {
   MissionListResponse,
 } from "../dtos/mission.dto.js";
 import { createMission, listStoreMissions } from "../services/mission.service.js";
+import { authenticateJwt } from "../../../common/middlewares/auth.middleware.js";
 
 @Route("stores/{storeId}/missions")
 @Tags("Missions")
 export class MissionController extends Controller {
   
   @Post()
+  @Middlewares(authenticateJwt())
   @Response<ApiResponse<MissionCreateResponse>>(200, "미션 생성 성공")
+  @Response<ApiResponse<null>>(401, "로그인 필요")
   @Response<ApiResponse<null>>(500, "미션 생성 실패")
   public async handleCreateMission(
     @Path() storeId: number,

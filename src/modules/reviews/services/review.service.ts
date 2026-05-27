@@ -11,6 +11,7 @@ import { StoreNotFoundError } from "../../../common/errors/error.js";
 
 export const createReview = async (
   storeId: number,
+  userId: number,
   data: CreateReviewRequest,
 ): Promise<ReviewCreateResponse> => {
   const store = await getStoreById(storeId);
@@ -21,7 +22,7 @@ export const createReview = async (
 
   const reviewId = await addReview({
     storeId,
-    userId: 1,
+    userId,
     score: data.score,
     content: data.content,
   });

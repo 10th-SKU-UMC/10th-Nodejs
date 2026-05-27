@@ -82,9 +82,11 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
 
 const isLogin = passport.authenticate('jwt', { session: false });
 app.get('/mypage', isLogin, (req, res) => {
+  const user = req.user as { name?: string } | undefined;
+
   res.status(200).json({
     success: true,
-    message: `인증 성공! ${req.user}님의 마이페이지입니다.`,
+    message: `인증 성공! ${user?.name ?? "사용자"}님의 마이페이지입니다.`,
     user: req.user,
   });
 });
