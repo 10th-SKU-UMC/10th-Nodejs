@@ -13,7 +13,7 @@ export class ReviewController extends Controller {
   ): Promise<ApiResponse<ReviewCreateResponse>> {
     console.log("리뷰 추가를 요청했습니다!");
     console.log("body:", body);
-    const review = createReview(bodyToReview(body));
+    const review = await createReview(bodyToReview(body));
     return success(review)
   }
 

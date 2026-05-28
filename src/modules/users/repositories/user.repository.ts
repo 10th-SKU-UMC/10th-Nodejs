@@ -1,5 +1,6 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { prisma } from "../../../db.config.js";
+import bcrypt from "bcrypt";
 
 // 1. User 데이터 삽입
 export const addUser = async (data: any) => {
@@ -9,6 +10,10 @@ export const addUser = async (data: any) => {
   if (user) {
     return null;
   }
+
+  const hashedPassword = data.password
+    ? await bcrypt.hash(data.password, 10)
+    : null;
 
   // 2. 새로운 유저 생성
   const created = await prisma.user.create({ 
@@ -20,10 +25,31 @@ export const addUser = async (data: any) => {
       address: data.address,
       detailAddress: data.detailAddress,
       phoneNumber: data.phoneNumber,
+      password: hashedPassword,
     } 
   });
 
   return created.id;
+};
+
+// 이메일로 유저 찾기
+export const getUserByEmail = async (email: string) => {
+  return await prisma.user.findFirst({ where: { email } });
+};
+
+// 유저 정보 수정
+export const updateUser = async (userId: number, data: any) => {
+  return await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(data.name && { name: data.name }),
+      ...(data.gender && { gender: data.gender }),
+      ...(data.birth && { birth: new Date(data.birth) }),
+      ...(data.address && { address: data.address }),
+      ...(data.detailAddress && { detailAddress: data.detailAddress }),
+      ...(data.phoneNumber && { phoneNumber: data.phoneNumber }),
+    },
+  });
 };
 
 // 2. 사용자 정보 얻기
