@@ -1,3 +1,4 @@
+// mission.controllers.ts
 import {
     Body,
     Controller,
@@ -6,10 +7,12 @@ import {
     Route,
     Tags,
     SuccessResponse,
+    Middlewares, // 추가
 } from "tsoa";
 import { StatusCodes } from "http-status-codes";
 import { createMission } from "../services/mission.service.js";
 import { ApiResponse, success } from "../../../common/responses/response.js";
+import { authorizeUser } from "../../../common/middlewares/auth.middleware.js"; // 추가
 import { MissionRequest, MissionResponse } from "../dtos/mission.dto.js";
 
 @Route("restaurants")
@@ -22,6 +25,7 @@ export class MissionController extends Controller {
      */
     @SuccessResponse(StatusCodes.CREATED, "Created")
     @Post("{restaurantId}/missions")
+    @Middlewares(authorizeUser()) // 미션 생성 권한 보호
     public async handleMissionCreate(
         @Path() restaurantId: number,
         @Body() body: MissionRequest,
@@ -30,13 +34,8 @@ export class MissionController extends Controller {
             `식당 ID ${restaurantId}에 새로운 미션 등록을 요청했습니다.`,
         );
 
-        // 서비스 로직 호출
         const result = await createMission(restaurantId, body);
-
-        // HTTP 상태 코드를 201로 설정
         this.setStatus(StatusCodes.CREATED);
-
-        // 통일된 규격으로 성공 응답 반환
         return success(result);
     }
 }

@@ -10,8 +10,14 @@ import {
     SuccessResponse,
     Response,
 } from "tsoa";
-import { UserSignUpRequest, UserSignUpResponse } from "../dtos/user.dto.js";
-import { userSignUp } from "../services/user.service.js";
+import { StatusCodes } from "http-status-codes";
+import {
+    UserSignUpRequest,
+    UserSignUpResponse,
+    SocialAdditionalInfoRequest,
+    SocialAdditionalInfoResponse,
+} from "../dtos/user.dto.js";
+import { userSignUp, socialAdditionalInfo } from "../services/user.service.js";
 import {
     ApiResponse,
     success,
@@ -21,14 +27,12 @@ import {
 import { authorizeUser } from "../../../common/middlewares/auth.middleware.js";
 import { Request as ExpressRequest } from "express";
 
-// 에러 발생 시의 응답 타입을 명확히 정의 (Swagger 문서화용)
-
 @Route("users")
 @Tags("Users (사용자 및 인증 관련 API)")
 export class UserController extends Controller {
     /**
      * 새로운 사용자를 시스템에 등록합니다.
-     * @summary 회원가입 API
+     * @summary 일반 회원가입 API
      * @param body 회원가입에 필요한 이메일, 비밀번호 등 필수 정보
      */
     @Post("signup")
@@ -51,7 +55,34 @@ export class UserController extends Controller {
         console.log("회원가입을 요청했습니다!");
         console.log("body:", body);
         const user = await userSignUp(body);
-        return success(user); // { resultType: "SUCCESS", error: null, data: user } 형태로 응답 구조화
+        return success(user);
+    }
+
+    /**
+     * 구글 소셜 로그인 연동 완료 후, 최초 유저의 필수 정보(이름, 닉네임, 메일, 전화번호, 생년월일 등)를 추가 등록합니다.
+     * @summary 소셜 가입자 추가 정보 등록 API
+     * @param body 소셜 회원 식별 ID 및 추가 기입 프로필 정보
+     */
+    @Post("oauth/additional-info")
+    @SuccessResponse(200, "소셜 추가 정보 등록 성공")
+    @Response<ApiErrorResponse>(400, "Bad Request (유효성 검사 실패 위치)", {
+        resultType: "FAIL",
+        error: {
+            errorCode: "VALIDATION_ERROR",
+            reason: "입력값 검증에 실패했습니다.",
+        },
+        data: null,
+    })
+    public async handleSocialAdditionalInfo(
+        @Body() body: SocialAdditionalInfoRequest,
+    ): Promise<ApiResponse<SocialAdditionalInfoResponse>> {
+        console.log(
+            `유저 ID ${body.userId} 번 소셜 사용자의 추가 프로필 등록을 처리합니다.`,
+        );
+        console.log("body:", body);
+
+        const result = await socialAdditionalInfo(body);
+        return success(result);
     }
 
     /**
@@ -83,7 +114,6 @@ export class UserController extends Controller {
 
     /**
      * 로그인한 회원만 접근 가능한 마이페이지 정보를 조회합니다.
-     * 쿠키 기반의 사용자 검증 프로세스가 포함되어 있습니다.
      * @summary 마이페이지 조회 API (인증 필요)
      */
     @Get("mypage")
@@ -96,7 +126,7 @@ export class UserController extends Controller {
             resultType: "FAIL",
             error: {
                 errorCode: "UNAUTHORIZED",
-                reason: "인증 정보(쿠키)가 유효하지 않거나 유실되었습니다.",
+                reason: "인증 정보가 유효하지 않거나 유실되었습니다.",
             },
             data: null,
         },
@@ -104,8 +134,22 @@ export class UserController extends Controller {
     public async handleMypage(
         @Request() req: ExpressRequest,
     ): Promise<ApiResponse<{ username: string; message: string }>> {
+        // 🔥 비인증 접근 시 가드 처리
+        if (!req.user) {
+            this.setStatus(StatusCodes.UNAUTHORIZED);
+            throw new Error(
+                "마이페이지에 접근할 권한이 없습니다. 로그인이 필요합니다.",
+            );
+        }
+
+        const currentUsername =
+            req.user?.username ||
+            req.user?.name ||
+            req.cookies?.username ||
+            "인증된 사용자";
+
         return success({
-            username: req.cookies.username,
+            username: currentUsername,
             message: "환영합니다! 이 페이지는 로그인한 사람만 볼 수 있습니다.",
         });
     }
@@ -129,14 +173,21 @@ export class UserController extends Controller {
 
     /**
      * 클라이언트에 저장된 로그인 쿠키를 파기하여 로그아웃 처리를 수행합니다.
-     * @summary 로그아웃 API (쿠키 삭제)
+     * @summary 로그아웃 API (인증 필요)
      */
     @Get("set-logout")
+    @Middlewares(authorizeUser())
     @SuccessResponse(200, "로그아웃 성공")
     public async handleSetLogout(
         @Request() req: ExpressRequest,
     ): Promise<ApiResponse<string>> {
+        // 🔥 비인증 접근 시 가드 처리
+        if (!req.user) {
+            this.setStatus(StatusCodes.UNAUTHORIZED);
+            throw new Error("이미 로그아웃 되었거나 잘못된 접근입니다.");
+        }
+
         req.res!.clearCookie("username");
-        return success("로그아웃 완료 (쿠키 삭제).");
+        return success("로그아웃 완료 (인증 정보 해제).");
     }
 }
