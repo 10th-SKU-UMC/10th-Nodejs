@@ -1,10 +1,16 @@
 import bcrypt from "bcrypt";
-import { UserSignUpRequest, UserSignUpResponse } from "../dtos/user.dto.js"; //인터페이스 가져오기
+import {
+  UpdateMyProfileRequest,
+  UpdateMyProfileResponse,
+  UserSignUpRequest,
+  UserSignUpResponse,
+} from "../dtos/user.dto.js"; //인터페이스 가져오기
 import {
   addUser,
   getUser,
   getUserPreferencesByUserId,
   setPreference,
+  updateUser,
 } from "../repositories/user.repository.js";
 import { DuplicateUserEmailError } from "../../../common/errors/error.js";
 
@@ -42,5 +48,32 @@ export const userSignUp = async (data: UserSignUpRequest): Promise<UserSignUpRes
   return <UserSignUpResponse>{
     userId,
     preferences,
+  };
+};
+
+export const updateMyProfile = async (
+  userId: number,
+  data: UpdateMyProfileRequest,
+): Promise<UpdateMyProfileResponse> => {
+  const updateData: Record<string, unknown> = {};
+
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.gender !== undefined) updateData.gender = data.gender;
+  if (data.birth !== undefined) updateData.birth = new Date(data.birth);
+  if (data.address !== undefined) updateData.address = data.address;
+  if (data.detailAddress !== undefined) updateData.detailAddress = data.detailAddress;
+  if (data.phoneNumber !== undefined) updateData.phoneNumber = data.phoneNumber;
+
+  const user = await updateUser(userId, updateData);
+
+  return {
+    userId: user.id,
+    email: user.email,
+    name: user.name,
+    gender: user.gender,
+    birth: user.birth,
+    address: user.address,
+    detailAddress: user.detailAddress,
+    phoneNumber: user.phoneNumber,
   };
 };

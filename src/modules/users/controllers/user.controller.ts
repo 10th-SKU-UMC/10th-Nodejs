@@ -3,16 +3,26 @@ import {
   Controller,
   Get,
   Middlewares,
+  Patch,
   Post,
+  Query,
   Request,
   Response,
   Route,
   Tags,
 } from "tsoa";
-import { UserSignUpRequest, UserSignUpResponse } from "../dtos/user.dto.js";
-import { userSignUp } from "../services/user.service.js";
+import {
+  UpdateMyProfileRequest,
+  UpdateMyProfileResponse,
+  UserSignUpRequest,
+  UserSignUpResponse,
+} from "../dtos/user.dto.js";
+import { updateMyProfile, userSignUp } from "../services/user.service.js";
 import { ApiResponse, success } from "../../../common/responses/response.js";
-import { authorizeUser } from "../../../common/middlewares/auth.middleware.js";
+import {
+  authenticateJwt,
+  getAuthenticatedUserId,
+} from "../../../common/middlewares/auth.middleware.js";
 import { Request as ExpressRequest } from "express";
 
 @Route("users") // 라우트 경로
@@ -29,6 +39,19 @@ export class UserController extends Controller {
     console.log("body:", body);
     const user = await userSignUp(body); //서비스 로직 호출
     return success(user); //성공 응답 보내기
+  }
+
+  @Patch("me")
+  @Middlewares(authenticateJwt())
+  @Response<ApiResponse<UpdateMyProfileResponse>>(200, "내 정보 수정 성공")
+  @Response<ApiResponse<null>>(401, "로그인 필요")
+  public async handleUpdateMyProfile(
+    @Request() req: ExpressRequest,
+    @Body() body: UpdateMyProfileRequest,
+  ): Promise<ApiResponse<UpdateMyProfileResponse>> {
+    const user = await updateMyProfile(getAuthenticatedUserId(req), body);
+
+    return success(user);
   }
 
   @Get("guest")
@@ -52,15 +75,17 @@ export class UserController extends Controller {
   }
 
   @Get("mypage")
-  @Middlewares(authorizeUser())
+  @Middlewares(authenticateJwt())
   @Response<ApiResponse<string>>(200, "마이페이지 조회 성공")
   @Response<ApiResponse<null>>(401, "로그인 필요")
   public async handleMypage(
     @Request() req: ExpressRequest,
   ): Promise<ApiResponse<string>> {
+    const user = req.user as { name?: string } | undefined;
+
     return success(`
             <h1>마이페이지</h1>
-            <p>환영합니다, ${req.cookies.username}님!</p>
+            <p>환영합니다, ${user?.name ?? "사용자"}님!</p>
             <p>이 페이지는 로그인한 사람만 볼 수 있습니다.</p>
         `);
   }
@@ -69,10 +94,11 @@ export class UserController extends Controller {
   @Response<ApiResponse<string>>(200, "로그인 쿠키 생성 성공")
   public async handleSetLogin(
     @Request() req: ExpressRequest,
+    @Query() username: string,
   ): Promise<ApiResponse<string>> {
-    req.res!.cookie("username", "UMC10th", { maxAge: 3600000 });
+    req.res!.cookie("username", username, { maxAge: 3600000 });
     return success(
-      '로그인 쿠키(username=UMC10th) 생성 완료! <a href="/api/v1/users/mypage">마이페이지로 이동</a>',
+      '로그인 쿠키 생성 완료! <a href="/api/v1/users/mypage">마이페이지로 이동</a>',
     );
   }
 

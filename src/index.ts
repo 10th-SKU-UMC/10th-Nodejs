@@ -8,9 +8,14 @@ import swaggerUi from "swagger-ui-express";
 // ESM 환경에서는 JSON 파일을 가져올 때 아래와 같이 처리합니다.
 import path from "path";
 import fs from "fs";
+import passport from "passport";
+import { googleStrategy, jwtStrategy } from "./auth.config.js";
 
 // 1. 환경 변수 설정
 dotenv.config();
+
+passport.use(googleStrategy);
+passport.use(jwtStrategy);
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
@@ -45,7 +50,16 @@ app.use(express.static("public")); // 정적 파일 접근
 app.use(express.json()); // request의 본문을 json으로 해석할 수 있도록 함(JSON 형태의 요청 body를 파싱하기 위함)
 app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
 app.use(cookieParser());
+app.get("/oauth2/login/google", passport.authenticate("google", { session: false }));
+app.get("/oauth2/callback/google", 
+  passport.authenticate("google", { session: false, failureRedirect: "/login-failed" }),
+  (req, res) => {
+    res.status(200).json({ success: true, tokens: req.user });
+  }
+);
 
+
+app.use(passport.initialize());
 // Express.js에 생성한 엔드 포인트들을 register
 const router = express.Router();
 RegisterRoutes(router); 
@@ -63,6 +77,17 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
     errorCode: err.errorCode || "unknown",
     message: err.message || null,
     data: err.data || null,
+  });
+});
+
+const isLogin = passport.authenticate('jwt', { session: false });
+app.get('/mypage', isLogin, (req, res) => {
+  const user = req.user as { name?: string } | undefined;
+
+  res.status(200).json({
+    success: true,
+    message: `인증 성공! ${user?.name ?? "사용자"}님의 마이페이지입니다.`,
+    user: req.user,
   });
 });
 
