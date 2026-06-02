@@ -36,13 +36,13 @@ export const responseFromStore = ({
   local: any;
 }): StoreCreateResponse => {
   return {
-    id: store.store_id,
+    id: Number(store.storeId),      // store_id → storeId
     name: store.name,
     category: store.category,
-    startTime: store.start_time,
-    endTime: store.end_time,
+    startTime: store.startTime,     // start_time → startTime
+    endTime: store.endTime,         // end_time → endTime
     rating: store.rating,
-    localId: local.local_id,
-    localName: local.local_name,
+    localId: Number(local.localId), // local_id → localId
+    localName: local.localName,     // local_name → localName
   };
 };

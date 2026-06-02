@@ -7,6 +7,9 @@ import type { Express, NextFunction, Request, Response } from "express";
 import cors from "cors";
 import { RegisterRoutes } from "./generated/routes.js";
 import { AppError } from "./common/error/app.error.js";
+import passport from "passport";
+import { googleStrategy, jwtStrategy } from "./auth.config.js";
+import { prisma } from "./db.config.js";
 
 import swaggerUi from "swagger-ui-express";
 // ESM 환경에서는 JSON 파일을 가져올 때 아래와 같이 처리합니다.
@@ -15,6 +18,10 @@ import fs from "fs";
 
 // 1. 환경 변수 설정
 dotenv.config();
+
+
+passport.use(googleStrategy);
+passport.use(jwtStrategy); 
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
@@ -49,7 +56,7 @@ app.use(cors({
 app.use(express.static('public'));    // 정적 파일 접근      
 app.use(express.json());              // request의 본문을 json으로 해석할 수 있도록 함(JSON 형태의 요청 body를 파싱하기 위함)     
 app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
-
+app.use(passport.initialize());
 
 // 3. 기본 라우트
 app.get("/", (req: Request, res: Response) => {
@@ -76,10 +83,29 @@ app.get('/getcookie', (req, res) => {
     }
 });
 
+app.get("/oauth2/login/google", passport.authenticate("google", { session: false }));
+app.get("/oauth2/callback/google", 
+  passport.authenticate("google", { session: false, failureRedirect: "/login-failed" }),
+  (req, res) => {
+    res.status(200).json({ success: true, tokens: req.user });
+  }
+);
+
+const isLogin = passport.authenticate('jwt', { session: false });
+
+app.get('/mypage', isLogin, (req, res) => {
+  res.status(200).success({
+    message: `인증 성공! ${req.cookies.username}님의 마이페이지입니다.`,
+    user: req.user,
+  });
+});
+
 // tsoa가 생성한 라우터 등록 (기존 app.post, app.get 전부 대체!)
 const router = express.Router();
 RegisterRoutes(router);
 app.use("/api/v1", router);
+
+
 
 /**
  * 전역 오류를 처리하기 위한 미들웨어

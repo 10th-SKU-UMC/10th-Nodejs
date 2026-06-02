@@ -22,6 +22,7 @@ model User {
   address       String   @db.VarChar(255)
   detailAddress String?  @map("detail_address") @db.VarChar(255)
   phoneNumber   String   @map("phone_number") @db.VarChar(15)
+  password      String?  @db.VarChar(255)
 
   userFavorCategories UserFavorCategory[]
   reviews             Review[]        

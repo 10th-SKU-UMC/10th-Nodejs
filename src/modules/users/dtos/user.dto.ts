@@ -9,6 +9,7 @@ export interface UserSignUpRequest {
   detailAddress?: string;
   phoneNumber: string;
   preferences: number[];
+  password: string;
 }
 
 
@@ -26,6 +27,7 @@ export const bodyToUser = (body: UserSignUpRequest) => {
     detailAddress: body.detailAddress || "", //선택 
     phoneNumber: body.phoneNumber,//필수
     preferences: body.preferences,// 필수 
+    password: body.password,
   };
 };
 
@@ -52,3 +54,42 @@ export const responseFromUser= (data: {user:any, preferences: any[]}): UserSignU
     }
 
 }
+
+
+// --- 로그인 로직 -----
+export interface UserLoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface UserLoginResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface UserUpdateRequest {
+  name?: string;
+  gender?: string;
+  birth?: Date;
+  address?: string;
+  detailAddress?: string;
+  phoneNumber?: string;
+}
+
+export interface UserUpdateResponse {
+  id: number;
+  email: string;
+  name: string;
+  gender: string;
+  phoneNumber: string;
+}
+
+export const responseFromUpdatedUser = (user: any): UserUpdateResponse => {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    gender: user.gender,
+    phoneNumber: user.phoneNumber,
+  };
+};

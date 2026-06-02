@@ -4,15 +4,19 @@
   "controllerPathGlobs": ["src/**/*.controller.ts"],
   "spec": {
     "outputDirectory": "dist",
-    "specVersion": 3
+    "specVersion": 3,
+    "basePath": "/api/v1" ,
+    "securityDefinitions": {
+      "Bearer": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
   },
   "routes": {
     "routesDir": "src/generated",
-    "esm": true
-  },
-  "spec": {
-      "outputDirectory": "dist",
-      "specVersion": 3,
-      "basePath": "/api/v1" 
+    "esm": true,
+    "authenticationModule": "./src/authentication.ts" 
   }
 }

@@ -1,12 +1,27 @@
-import { UserSignUpRequest, UserSignUpResponse } from "../dtos/user.dto.js"; //인터페이스 가져오기 
-import { responseFromUser } from "../dtos/user.dto.js";
+import {
+  UserSignUpRequest,
+  UserSignUpResponse,
+  UserLoginRequest,
+  UserLoginResponse,
+  UserUpdateRequest,
+  UserUpdateResponse,
+  responseFromUser,
+  responseFromUpdatedUser,
+} from "../dtos/user.dto.js";
 import {
   addUser,
   getUser,
   getUserPreferencesByUserId,
   setPreference,
+  getUserByEmail,
+  updateUser,
 } from "../repositories/user.repository.js";
 import { DuplicateUserEmailError } from "../../../common/error/error.js";
+import bcrypt from "bcrypt";
+import { generateAccessToken, generateRefreshToken } from "../../../auth.config.js";
+import { AppError } from "../../../common/error/app.error.js";
+
+
 
 export const userSignUp = async (data: UserSignUpRequest): Promise<UserSignUpResponse> => {
   const joinUserId = await addUser({
@@ -17,6 +32,7 @@ export const userSignUp = async (data: UserSignUpRequest): Promise<UserSignUpRes
     address: data.address,
     detailAddress: data.detailAddress,
     phoneNumber: data.phoneNumber,
+    password: data.password,
   });
 
   if (joinUserId === null) {
@@ -31,4 +47,40 @@ export const userSignUp = async (data: UserSignUpRequest): Promise<UserSignUpRes
   const preferences = await getUserPreferencesByUserId(joinUserId);
 
   return responseFromUser({ user, preferences });
+};
+
+// 로그인
+export const userLogin = async (data: UserLoginRequest): Promise<UserLoginResponse> => {
+  const user = await getUserByEmail(data.email);
+  if (!user) {
+    throw new AppError({
+      errorCode: "NOT_FOUND",
+      message: "존재하지 않는 이메일입니다.",
+      statusCode: 404,
+    });
+  }
+
+  const isPasswordValid = await bcrypt.compare(data.password, user.password ?? "");
+  if (!isPasswordValid) {
+    throw new AppError({
+      errorCode: "UNAUTHORIZED",
+      message: "비밀번호가 틀렸습니다.",
+      statusCode: 401,
+    });
+  }
+
+  return {
+    accessToken: generateAccessToken({ id: user.id, email: user.email }),
+    refreshToken: generateRefreshToken({ id: user.id }),
+  };
+};
+
+export const userUpdate = async (userId: number, data: UserUpdateRequest): Promise<UserUpdateResponse> => {
+  const user = await updateUser(userId, data);
+  return responseFromUpdatedUser(user);
+};
+
+export const getMyInfo = async (userId: number): Promise<UserUpdateResponse> => {
+  const user = await getUser(userId);
+  return responseFromUpdatedUser(user);
 };
