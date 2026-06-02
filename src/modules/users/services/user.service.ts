@@ -32,6 +32,7 @@ export const userSignUp = async (data: UserSignUpRequest): Promise<UserSignUpRes
     address: data.address,
     detailAddress: data.detailAddress,
     phoneNumber: data.phoneNumber,
+    password: data.password,
   });
 
   if (joinUserId === null) {
@@ -76,5 +77,10 @@ export const userLogin = async (data: UserLoginRequest): Promise<UserLoginRespon
 
 export const userUpdate = async (userId: number, data: UserUpdateRequest): Promise<UserUpdateResponse> => {
   const user = await updateUser(userId, data);
+  return responseFromUpdatedUser(user);
+};
+
+export const getMyInfo = async (userId: number): Promise<UserUpdateResponse> => {
+  const user = await getUser(userId);
   return responseFromUpdatedUser(user);
 };

@@ -1,4 +1,4 @@
-import { Controller, Post, Patch, Body, Route, Tags, SuccessResponse, Request, Middlewares  } from "tsoa";
+import { Controller, Post, Patch, Get, Body, Route, Tags, SuccessResponse, Request, Middlewares, Security   } from "tsoa";
 import { bodyToUser, 
   type UserSignUpRequest, 
   type UserSignUpResponse,
@@ -8,7 +8,7 @@ import { bodyToUser,
   type UserUpdateResponse,
  } from "../dtos/user.dto.js";
  import passport from "passport";
-import { userSignUp, userLogin, userUpdate } from "../services/user.service.js";
+import { userSignUp, userLogin, userUpdate, getMyInfo } from "../services/user.service.js";
 import { authorizeUser } from "../../../common/middlewares/auth.middleware.js";
 import { Request as ExpressRequest } from "express";
 import { ApiResponse, success } from "../../../common/response/response.js";
@@ -38,8 +38,20 @@ export class UserController extends Controller {
     return success(tokens);
   }
 
+  @Get("mypage")
+  @Security("Bearer")
+  @Middlewares(isLogin)
+  public async getMe(
+    @Request() req: ExpressRequest
+  ): Promise<ApiResponse<UserUpdateResponse>> {
+    const userId = (req.user as any).id;
+    const user = await getMyInfo(userId);
+    return success(user);
+  }
+
   // 내 정보 수정 (로그인 필요)
   @Patch("me")
+  @Security("Bearer") 
   @Middlewares(isLogin)
   public async updateMe(
     @Body() body: UserUpdateRequest,
