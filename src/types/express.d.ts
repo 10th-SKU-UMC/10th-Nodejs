@@ -1,13 +1,15 @@
-import * as express from "express";
+// src/types/express.d.ts
+import { Response } from "express";
 
-declare global {
-  namespace Express {
+declare module "express-serve-static-core" {
     interface Response {
-      error: (params: {
-        errorCode: string;
-        message: string | null;
-        data?: any;
-      }) => void;
+        success: <T>(data: T) => this;
+        error: (args: {
+            errorCode?: string | null;
+            message?: string | null;
+            data?: unknown;
+        }) => this;
     }
-  }
 }
+
+export {};
