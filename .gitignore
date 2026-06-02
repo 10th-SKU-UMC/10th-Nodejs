@@ -4,3 +4,5 @@ node_modules
 scripts/
 week6/
 .DS_Store
+authentication.json
+authentification.json

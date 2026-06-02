@@ -1,7 +1,14 @@
 CREATE TABLE "members" (
   "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  "name" TEXT NOT NULL
+  "name" TEXT NOT NULL,
+  "email" TEXT,
+  "password" TEXT,
+  "phone" TEXT,
+  "birthday" TEXT,
+  "auth_provider" TEXT NOT NULL DEFAULT 'LOCAL'
 );
+
+CREATE UNIQUE INDEX "members_email_key" ON "members"("email");
 
 CREATE TABLE "regions" (
   "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,

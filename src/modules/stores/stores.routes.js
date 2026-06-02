@@ -1,18 +1,19 @@
 const express = require('express');
 const asyncHandler = require('../../common/middlewares/async-handler.middleware');
+const { isLogin } = require('../../common/middlewares/auth.middleware');
 const { sendControllerResult } = require('../../common/utils/controller-response.util');
 const StoresController = require('./stores.controller');
 
 const router = express.Router();
 
-router.post('/regions/:regionId/stores', asyncHandler(async (req, res) => {
+router.post('/regions/:regionId/stores', isLogin, asyncHandler(async (req, res) => {
   const controller = new StoresController();
   const result = await controller.createStore(req.params.regionId, req.body);
 
   return sendControllerResult(res, controller, result);
 }));
 
-router.post('/stores/:storeId/missions', asyncHandler(async (req, res) => {
+router.post('/stores/:storeId/missions', isLogin, asyncHandler(async (req, res) => {
   const controller = new StoresController();
   const result = await controller.createMission(req.params.storeId, req.body);
 

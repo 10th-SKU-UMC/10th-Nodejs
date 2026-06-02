@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Path, Post, Query, Response, Route, SuccessResponse, Tags } from 'tsoa';
+import { Body, Controller, Get, Path, Post, Query, Response, Route, Security, SuccessResponse, Tags } from 'tsoa';
 import { ApiFailResponse, ApiSuccessResponse } from '../../common/swagger/api-response.dto';
 import { MissionResponse, ReviewResponse } from '../../common/swagger/domain.dto';
 import { CreateMissionRequest, CreateReviewRequest } from '../../common/swagger/request.dto';
@@ -10,8 +10,10 @@ export class StoresTsoaController extends Controller {
    * 특정 가게 미션 등록
    */
   @Post('{storeId}/missions')
+  @Security('bearerAuth')
   @SuccessResponse('201', 'Created')
   @Response<ApiFailResponse>('400', 'storeId, title, reward, deadline이 유효하지 않은 경우')
+  @Response<ApiFailResponse>('401', '로그인이 필요하거나 토큰이 유효하지 않은 경우')
   @Response<ApiFailResponse>('404', '존재하지 않는 가게인 경우')
   public async createMission(
     /** 가게 ID */
@@ -48,8 +50,10 @@ export class StoresTsoaController extends Controller {
    * 특정 가게 리뷰 작성
    */
   @Post('{storeId}/reviews')
+  @Security('bearerAuth')
   @SuccessResponse('201', 'Created')
   @Response<ApiFailResponse>('400', 'storeId, rating, content가 유효하지 않은 경우')
+  @Response<ApiFailResponse>('401', '로그인이 필요하거나 토큰이 유효하지 않은 경우')
   @Response<ApiFailResponse>('404', '존재하지 않는 가게인 경우')
   public async createReview(
     /** 가게 ID */

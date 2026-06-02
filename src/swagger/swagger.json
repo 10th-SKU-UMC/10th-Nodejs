@@ -468,6 +468,213 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"MemberResponse": {
+				"description": "회원 정보",
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double",
+						"description": "회원 ID"
+					},
+					"name": {
+						"type": "string",
+						"description": "회원 이름"
+					},
+					"email": {
+						"type": "string",
+						"nullable": true,
+						"description": "회원 이메일"
+					},
+					"phone": {
+						"type": "string",
+						"nullable": true,
+						"description": "회원 전화번호"
+					},
+					"birthday": {
+						"type": "string",
+						"nullable": true,
+						"description": "회원 생일"
+					},
+					"authProvider": {
+						"type": "string",
+						"description": "최초 가입 방식"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"authProvider"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AuthTokenResponse": {
+				"description": "로그인 토큰 응답",
+				"properties": {
+					"accessToken": {
+						"type": "string",
+						"description": "JWT Access Token"
+					},
+					"member": {
+						"$ref": "#/components/schemas/MemberResponse",
+						"description": "로그인한 회원 정보"
+					}
+				},
+				"required": [
+					"accessToken",
+					"member"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiSuccessResponse_AuthTokenResponse_": {
+				"description": "API 성공 응답 공통 포맷",
+				"properties": {
+					"resultType": {
+						"type": "string",
+						"enum": [
+							"SUCCESS"
+						],
+						"nullable": false,
+						"description": "요청 처리 결과"
+					},
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true,
+						"description": "성공 응답 null 값"
+					},
+					"data": {
+						"$ref": "#/components/schemas/AuthTokenResponse",
+						"description": "API별 성공 응답 데이터"
+					}
+				},
+				"required": [
+					"resultType",
+					"error",
+					"data"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"SignUpRequest": {
+				"description": "회원가입 요청",
+				"properties": {
+					"email": {
+						"type": "string",
+						"description": "회원 이메일"
+					},
+					"password": {
+						"type": "string",
+						"description": "회원 비밀번호"
+					},
+					"name": {
+						"type": "string",
+						"description": "회원 이름"
+					},
+					"phone": {
+						"type": "string",
+						"description": "회원 전화번호"
+					},
+					"birthday": {
+						"type": "string",
+						"description": "회원 생일"
+					}
+				},
+				"required": [
+					"email",
+					"password",
+					"name"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"GoogleLoginStartResponse": {
+				"description": "Google 로그인 시작 응답",
+				"properties": {
+					"redirect": {
+						"type": "string",
+						"description": "Google 로그인 페이지 이동"
+					}
+				},
+				"required": [
+					"redirect"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"LoginRequest": {
+				"description": "로그인 요청",
+				"properties": {
+					"email": {
+						"type": "string",
+						"description": "회원 이메일"
+					},
+					"password": {
+						"type": "string",
+						"description": "회원 비밀번호"
+					}
+				},
+				"required": [
+					"email",
+					"password"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiSuccessResponse_MemberResponse_": {
+				"description": "API 성공 응답 공통 포맷",
+				"properties": {
+					"resultType": {
+						"type": "string",
+						"enum": [
+							"SUCCESS"
+						],
+						"nullable": false,
+						"description": "요청 처리 결과"
+					},
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true,
+						"description": "성공 응답 null 값"
+					},
+					"data": {
+						"$ref": "#/components/schemas/MemberResponse",
+						"description": "API별 성공 응답 데이터"
+					}
+				},
+				"required": [
+					"resultType",
+					"error",
+					"data"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateMyInfoRequest": {
+				"description": "내 정보 수정 요청",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "회원 이름"
+					},
+					"phone": {
+						"type": "string",
+						"description": "회원 전화번호"
+					},
+					"birthday": {
+						"type": "string",
+						"description": "회원 생일"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
 			"ReviewWithStoreResponse": {
 				"description": "가게 정보를 포함한 리뷰 정보",
 				"properties": {
@@ -676,7 +883,13 @@
 				"additionalProperties": false
 			}
 		},
-		"securitySchemes": {}
+		"securitySchemes": {
+			"bearerAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
+			}
+		}
 	},
 	"info": {
 		"title": "umc-node-simple-api",
@@ -709,6 +922,16 @@
 							}
 						}
 					},
+					"401": {
+						"description": "로그인이 필요하거나 토큰이 유효하지 않은 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
+					},
 					"404": {
 						"description": "존재하지 않는 가게인 경우",
 						"content": {
@@ -724,7 +947,11 @@
 				"tags": [
 					"Stores"
 				],
-				"security": [],
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
 				"parameters": [
 					{
 						"description": "가게 ID",
@@ -847,6 +1074,16 @@
 							}
 						}
 					},
+					"401": {
+						"description": "로그인이 필요하거나 토큰이 유효하지 않은 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
+					},
 					"404": {
 						"description": "존재하지 않는 가게인 경우",
 						"content": {
@@ -862,7 +1099,11 @@
 				"tags": [
 					"Stores"
 				],
-				"security": [],
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
 				"parameters": [
 					{
 						"description": "가게 ID",
@@ -979,6 +1220,16 @@
 							}
 						}
 					},
+					"401": {
+						"description": "로그인이 필요하거나 토큰이 유효하지 않은 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
+					},
 					"404": {
 						"description": "존재하지 않는 미션인 경우",
 						"content": {
@@ -1004,7 +1255,11 @@
 				"tags": [
 					"Missions"
 				],
-				"security": [],
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
 				"parameters": [
 					{
 						"description": "미션 ID",
@@ -1043,6 +1298,16 @@
 							}
 						}
 					},
+					"401": {
+						"description": "로그인이 필요하거나 토큰이 유효하지 않은 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
+					},
 					"404": {
 						"description": "진행 중인 미션이 아닌 경우",
 						"content": {
@@ -1058,7 +1323,11 @@
 				"tags": [
 					"Missions"
 				],
-				"security": [],
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
 				"parameters": [
 					{
 						"description": "미션 ID",
@@ -1071,6 +1340,276 @@
 						}
 					}
 				]
+			}
+		},
+		"/auth/signup": {
+			"post": {
+				"operationId": "SignUp",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiSuccessResponse_AuthTokenResponse_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "email, password, name이 유효하지 않은 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "다른 로그인 방식으로 가입된 이메일인 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "이메일 회원가입",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "회원가입 요청 body",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/SignUpRequest",
+								"description": "회원가입 요청 body"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/google": {
+			"get": {
+				"operationId": "StartGoogleLogin",
+				"responses": {
+					"302": {
+						"description": "Redirect",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/GoogleLoginStartResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Google 로그인 시작",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/auth/google/callback": {
+			"get": {
+				"operationId": "GoogleCallback",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiSuccessResponse_AuthTokenResponse_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Google 로그인이 실패한 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "다른 로그인 방식으로 가입된 이메일인 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Google 로그인 콜백",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/auth/login": {
+			"post": {
+				"operationId": "Login",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiSuccessResponse_AuthTokenResponse_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "email, password가 유효하지 않은 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "이메일 또는 비밀번호가 올바르지 않은 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "이메일 로그인",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "로그인 요청 body",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/LoginRequest",
+								"description": "로그인 요청 body"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/members/me": {
+			"get": {
+				"operationId": "GetMyInfo",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiSuccessResponse_MemberResponse_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "로그인이 필요하거나 토큰이 유효하지 않은 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "현재 로그인한 회원 정보 조회",
+				"tags": [
+					"Members"
+				],
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"parameters": []
+			},
+			"patch": {
+				"operationId": "UpdateMyInfo",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiSuccessResponse_MemberResponse_"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "수정할 회원 정보가 없는 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "로그인이 필요하거나 토큰이 유효하지 않은 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "현재 로그인한 회원 정보 수정",
+				"tags": [
+					"Members"
+				],
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"description": "내 정보 수정 요청 body",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateMyInfoRequest",
+								"description": "내 정보 수정 요청 body"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/members/me/reviews": {
@@ -1096,13 +1635,27 @@
 								}
 							}
 						}
+					},
+					"401": {
+						"description": "로그인이 필요하거나 토큰이 유효하지 않은 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
 					}
 				},
 				"description": "현재 로그인한 회원 리뷰 목록 조회",
 				"tags": [
 					"Members"
 				],
-				"security": [],
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
 				"parameters": [
 					{
 						"description": "한 번에 조회할 개수, 기본값 10, 최대 50",
@@ -1150,13 +1703,27 @@
 								}
 							}
 						}
+					},
+					"401": {
+						"description": "로그인이 필요하거나 토큰이 유효하지 않은 경우",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiFailResponse"
+								}
+							}
+						}
 					}
 				},
 				"description": "현재 로그인한 회원 진행 중 미션 목록 조회",
 				"tags": [
 					"Members"
 				],
-				"security": [],
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
 				"parameters": [
 					{
 						"description": "한 번에 조회할 개수, 기본값 10, 최대 50",
