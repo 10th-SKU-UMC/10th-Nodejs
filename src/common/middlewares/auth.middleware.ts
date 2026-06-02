@@ -1,18 +1,20 @@
 import { Request, Response, NextFunction } from "express";
+import passport from "passport";
+
+// JWT 토큰을 검증하고 req.user에 로그인한 사용자 정보를 주입합니다.
 export function authorizeUser() {
-  return async (req: Request, res: Response, next: NextFunction) => {
-	  // cookie-parser가 만들어준 req.cookies 객체에서 username을 확인
-    const { username } = req.cookies;
-    if (username) {
-      console.log(`[인증 성공] ${username}님, 환영합니다.`);
+  return (req: Request, res: Response, next: NextFunction) => {
+    passport.authenticate("jwt", { session: false }, (err: any, user: any) => {
+      if (err || !user) {
+        res.status(401).json({
+          resultType: "FAIL",
+          error: { errorCode: "UNAUTHORIZED", message: "로그인이 필요합니다." },
+          success: null,
+        });
+        return;
+      }
+      req.user = user; // 이후 req.user로 로그인한 사용자 정보에 접근 가능
       next();
-    } else {
-      console.log("[인증 실패] 로그인이 필요합니다.");
-      res
-        .status(401)
-        .send(
-          '<script>alert("로그인이 필요합니다!");location.href="/api/v1/users/login";</script>',
-        );
-    }
+    })(req, res, next);
   };
 }

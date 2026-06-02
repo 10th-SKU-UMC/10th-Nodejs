@@ -1,0 +1,11 @@
+{
+  "watch": [
+    "src/modules",
+    "src/common",
+    "src/index.ts",
+    "src/auth.config.ts",
+    "src/db.config.ts"
+  ],
+  "ext": "ts",
+  "exec": "tsx src/index.ts"
+}

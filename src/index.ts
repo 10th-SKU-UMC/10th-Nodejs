@@ -6,6 +6,8 @@ import cookieParser from "cookie-parser";
 import swaggerUiExpress from "swagger-ui-express";
 import fs from "fs";
 import path from "path";
+import passport from "passport";
+import { googleStrategy, jwtStrategy } from "./auth.config.js";
 import { RegisterRoutes } from "./generated/routes";
 import { AppError } from "./common/errors/app.error";
 
@@ -18,6 +20,9 @@ declare global {
 }
 
 dotenv.config();
+
+passport.use(googleStrategy);
+passport.use(jwtStrategy); 
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -39,12 +44,39 @@ app.use(cookieParser());
 app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(passport.initialize());
 
 app.get("/test", (req, res) => {
   res.send("Hello!");
 });
 
-// Swagger (TSOA 방식)
+// OAuth 라우트
+app.get("/oauth2/login/google", passport.authenticate("google", { session: false }));
+app.get(
+  "/oauth2/callback/google",
+  passport.authenticate("google", { session: false, failureRedirect: "/login-failed" }),
+  (req, res) => {
+    res.status(200).json({ success: true, tokens: req.user });
+  }
+);
+
+// JWT 인증 미들웨어
+const isLogin = passport.authenticate("jwt", { session: false });
+
+// 마이페이지
+app.get("/mypage", isLogin, (req, res) => {
+  const user = req.user as any; // ✅ auth.config.ts의 User 타입 있으면 교체
+  res.status(200).json({
+    resultType: "SUCCESS",
+    error: null,
+    success: {
+      message: `인증 성공! ${user.name}님의 마이페이지입니다.`,
+      user: req.user,
+    },
+  });
+});
+
+// Swagger
 const swaggerFile = JSON.parse(
   fs.readFileSync(path.resolve("dist/swagger.json"), "utf8")
 );

@@ -1,6 +1,9 @@
 import { Body, Controller, Get, Path, Post, Query, Route, Tags, Response } from "tsoa";
 import { storeService, listStoreReviews } from "../services/store.service";
 import { CreateStoreRequest } from "../dtos/store.dto";
+import { Middlewares, Request } from "tsoa";
+import { authorizeUser } from "../../../common/middlewares/auth.middleware";
+import { Request as ExpressRequest } from "express";
 
 import { ErrorResponse } from "../../../common/dtos/error.dto";
 
@@ -13,7 +16,9 @@ export class StoreController extends Controller {
    */
   @Post("/")
   @Response<ErrorResponse>(500, "서버 오류")
+  @Middlewares(authorizeUser())
   public async createStore(
+    @Request() req: ExpressRequest,
     @Body() body: CreateStoreRequest
   ): Promise<any> {
     return await storeService.createStore(body);
@@ -31,3 +36,4 @@ export class StoreController extends Controller {
     return await listStoreReviews(storeId, cursor ?? 0);
   }
 }
+

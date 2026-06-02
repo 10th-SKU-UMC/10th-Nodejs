@@ -50,3 +50,16 @@ export const getUserPreferencesByUserId = async (userId: number) => {
     orderBy: { foodCategoryId: "asc" },
   });
 };
+
+export const updateUser = async (userId: number, data: {
+  phoneNumber?: string;
+  birth?: string;
+}) => {
+  return await prisma.user.update({
+    where: { id: userId },
+    data: {
+      phoneNumber: data.phoneNumber,
+      birth: data.birth ? new Date(data.birth) : undefined,
+    },
+  });
+};

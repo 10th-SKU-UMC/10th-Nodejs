@@ -7,6 +7,8 @@ import {
   setPreference,
 } from "../repositories/user.repository.js";
 import { DuplicateUserEmailError } from "../../../common/errors/errors";
+import { UpdateUserBody } from "../dtos/user.dto";
+import { updateUser } from "../repositories/user.repository.js";
 
 export const userSignUp = async (data: UserSignUpRequest): Promise<UserSignUpResponse> => {
   const hashedPassword = await bcrypt.hash(data.password, 10);  
@@ -40,4 +42,8 @@ export const userSignUp = async (data: UserSignUpRequest): Promise<UserSignUpRes
     userId,
     preferences,
   };
+};
+
+export const updateMe = async (userId: number, data: UpdateUserBody) => {
+  return await updateUser(userId, data);
 };

@@ -29,10 +29,9 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "CreateUserMissionRequest": {
+    "CreateUserMissionBody": {
         "dataType": "refObject",
         "properties": {
-            "user_id": {"dataType":"double","required":true},
             "mission_id": {"dataType":"double","required":true},
         },
         "additionalProperties": false,
@@ -73,6 +72,25 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ApiResponse_any_": {
+        "dataType": "refObject",
+        "properties": {
+            "resultType": {"dataType":"enum","enums":["SUCCESS"],"required":true},
+            "error": {"dataType":"enum","enums":[null],"required":true},
+            "data": {"dataType":"any","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "UpdateUserBody": {
+        "dataType": "refObject",
+        "properties": {
+            "phoneNumber": {"dataType":"string"},
+            "birth": {"dataType":"string"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "CreateStoreRequest": {
         "dataType": "refObject",
         "properties": {
@@ -84,10 +102,9 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "CreateReviewRequest": {
+    "CreateReviewBody": {
         "dataType": "refObject",
         "properties": {
-            "user_id": {"dataType":"double","required":true},
             "store_id": {"dataType":"double","required":true},
             "score": {"dataType":"double","required":true},
             "content": {"dataType":"string","required":true},
@@ -124,7 +141,8 @@ export function RegisterRoutes(app: Router) {
 
     
         const argsUserMissionController_createUserMission: Record<string, TsoaRoute.ParameterSchema> = {
-                body: {"in":"body","name":"body","required":true,"ref":"CreateUserMissionRequest"},
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                body: {"in":"body","name":"body","required":true,"ref":"CreateUserMissionBody"},
         };
         app.post('/user-missions',
             ...(fetchMiddlewares<RequestHandler>(UserMissionController)),
@@ -154,9 +172,9 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsUserMissionController_getChallengingMissions: Record<string, TsoaRoute.ParameterSchema> = {
-                userId: {"in":"path","name":"userId","required":true,"dataType":"double"},
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
-        app.get('/user-missions/user/:userId',
+        app.get('/user-missions/my',
             ...(fetchMiddlewares<RequestHandler>(UserMissionController)),
             ...(fetchMiddlewares<RequestHandler>(UserMissionController.prototype.getChallengingMissions)),
 
@@ -243,64 +261,6 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsUserController_handleGuestPage: Record<string, TsoaRoute.ParameterSchema> = {
-        };
-        app.get('/users/guest',
-            ...(fetchMiddlewares<RequestHandler>(UserController)),
-            ...(fetchMiddlewares<RequestHandler>(UserController.prototype.handleGuestPage)),
-
-            async function UserController_handleGuestPage(request: ExRequest, response: ExResponse, next: any) {
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsUserController_handleGuestPage, request, response });
-
-                const controller = new UserController();
-
-              await templateService.apiHandler({
-                methodName: 'handleGuestPage',
-                controller,
-                response,
-                next,
-                validatedArgs,
-                successStatus: undefined,
-              });
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsUserController_handleLoginPage: Record<string, TsoaRoute.ParameterSchema> = {
-        };
-        app.get('/users/login',
-            ...(fetchMiddlewares<RequestHandler>(UserController)),
-            ...(fetchMiddlewares<RequestHandler>(UserController.prototype.handleLoginPage)),
-
-            async function UserController_handleLoginPage(request: ExRequest, response: ExResponse, next: any) {
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsUserController_handleLoginPage, request, response });
-
-                const controller = new UserController();
-
-              await templateService.apiHandler({
-                methodName: 'handleLoginPage',
-                controller,
-                response,
-                next,
-                validatedArgs,
-                successStatus: undefined,
-              });
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsUserController_handleMypage: Record<string, TsoaRoute.ParameterSchema> = {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
@@ -331,55 +291,26 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsUserController_handleSetLogin: Record<string, TsoaRoute.ParameterSchema> = {
+        const argsUserController_handleUpdateMe: Record<string, TsoaRoute.ParameterSchema> = {
                 req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                body: {"in":"body","name":"body","required":true,"ref":"UpdateUserBody"},
         };
-        app.get('/users/set-login',
+        app.patch('/users/me',
             ...(fetchMiddlewares<RequestHandler>(UserController)),
-            ...(fetchMiddlewares<RequestHandler>(UserController.prototype.handleSetLogin)),
+            ...(fetchMiddlewares<RequestHandler>(UserController.prototype.handleUpdateMe)),
 
-            async function UserController_handleSetLogin(request: ExRequest, response: ExResponse, next: any) {
+            async function UserController_handleUpdateMe(request: ExRequest, response: ExResponse, next: any) {
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
             let validatedArgs: any[] = [];
             try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsUserController_handleSetLogin, request, response });
+                validatedArgs = templateService.getValidatedArgs({ args: argsUserController_handleUpdateMe, request, response });
 
                 const controller = new UserController();
 
               await templateService.apiHandler({
-                methodName: 'handleSetLogin',
-                controller,
-                response,
-                next,
-                validatedArgs,
-                successStatus: undefined,
-              });
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsUserController_handleSetLogout: Record<string, TsoaRoute.ParameterSchema> = {
-                req: {"in":"request","name":"req","required":true,"dataType":"object"},
-        };
-        app.get('/users/set-logout',
-            ...(fetchMiddlewares<RequestHandler>(UserController)),
-            ...(fetchMiddlewares<RequestHandler>(UserController.prototype.handleSetLogout)),
-
-            async function UserController_handleSetLogout(request: ExRequest, response: ExResponse, next: any) {
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsUserController_handleSetLogout, request, response });
-
-                const controller = new UserController();
-
-              await templateService.apiHandler({
-                methodName: 'handleSetLogout',
+                methodName: 'handleUpdateMe',
                 controller,
                 response,
                 next,
@@ -392,6 +323,7 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsStoreController_createStore: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
                 body: {"in":"body","name":"body","required":true,"ref":"CreateStoreRequest"},
         };
         app.post('/stores',
@@ -453,7 +385,8 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsReviewController_createReview: Record<string, TsoaRoute.ParameterSchema> = {
-                body: {"in":"body","name":"body","required":true,"ref":"CreateReviewRequest"},
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                body: {"in":"body","name":"body","required":true,"ref":"CreateReviewBody"},
         };
         app.post('/reviews',
             ...(fetchMiddlewares<RequestHandler>(ReviewController)),
@@ -483,9 +416,9 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsReviewController_getMyReviews: Record<string, TsoaRoute.ParameterSchema> = {
-                userId: {"in":"path","name":"userId","required":true,"dataType":"double"},
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
         };
-        app.get('/reviews/user/:userId',
+        app.get('/reviews/my',
             ...(fetchMiddlewares<RequestHandler>(ReviewController)),
             ...(fetchMiddlewares<RequestHandler>(ReviewController.prototype.getMyReviews)),
 
@@ -513,6 +446,7 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsMissionController_createMission: Record<string, TsoaRoute.ParameterSchema> = {
+                req: {"in":"request","name":"req","required":true,"dataType":"object"},
                 body: {"in":"body","name":"body","required":true,"ref":"CreateMissionRequest"},
         };
         app.post('/missions',

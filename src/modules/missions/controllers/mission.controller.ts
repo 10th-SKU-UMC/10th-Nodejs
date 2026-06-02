@@ -1,6 +1,9 @@
 import { Body, Controller, Get, Path, Post, Route, Tags, Response } from "tsoa";
 import { missionService } from "../services/mission.service";
 import { CreateMissionRequest } from "../dtos/mission.dto";
+import { Middlewares, Request } from "tsoa";
+import { authorizeUser } from "../../../common/middlewares/auth.middleware";
+import { Request as ExpressRequest } from "express";
 
 import { ErrorResponse } from "../../../common/dtos/error.dto";
 
@@ -14,7 +17,9 @@ export class MissionController extends Controller {
   @Post("/")
   @Response<ErrorResponse>(400, "잘못된 요청 (존재하지 않는 가게 / 입력값 오류)")
   @Response<ErrorResponse>(500, "서버 오류")
+  @Middlewares(authorizeUser())
   public async createMission(
+    @Request() req: ExpressRequest,
     @Body() body: CreateMissionRequest
   ): Promise<any> {
     return await missionService.createMission(body);

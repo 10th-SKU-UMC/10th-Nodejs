@@ -1,5 +1,3 @@
-import { setPreference } from "../repositories/user.repository";
-
 // 요청 DTO
 export interface UserSignUpRequest {
   email: string;
@@ -17,4 +15,9 @@ export interface UserSignUpRequest {
 export interface UserSignUpResponse {
   userId: number;     // id → userId로 변경
   preferences: string[];  // perferCategory → preferences로 변경
+}
+
+export interface UpdateUserBody {
+  phoneNumber?: string;
+  birth?: string; // ISO 형식 날짜 문자열 (예: "2000-01-01")
 }
