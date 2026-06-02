@@ -6,9 +6,9 @@ const { getListOptions } = require('../../common/utils/pagination.util');
 const reviewsService = require('./reviews.service');
 
 class ReviewsController extends Controller {
-  async createReview(storeId, requestBody) {
+  async createReview(req, storeId, requestBody) {
     const parsedStoreId = Number(storeId);
-    const memberId = currentMemberId();
+    const memberId = currentMemberId(req);
     const { rating, content } = requestBody;
 
     if (!isPositiveInt(parsedStoreId) || !isPositiveInt(rating) || Number(rating) > 5 || !content) {
@@ -19,8 +19,8 @@ class ReviewsController extends Controller {
     return reviewsService.createReview(parsedStoreId, memberId, { rating, content });
   }
 
-  async getMyReviews(query) {
-    const memberId = currentMemberId();
+  async getMyReviews(req, query) {
+    const memberId = currentMemberId(req);
     const options = getListOptions(query);
 
     if (!options) {

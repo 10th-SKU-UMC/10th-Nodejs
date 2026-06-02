@@ -6,9 +6,9 @@ const { getListOptions } = require('../../common/utils/pagination.util');
 const missionsService = require('./missions.service');
 
 class MissionsController extends Controller {
-  async challengeMission(missionId) {
+  async challengeMission(req, missionId) {
     const parsedMissionId = Number(missionId);
-    const memberId = currentMemberId();
+    const memberId = currentMemberId(req);
 
     if (!isPositiveInt(parsedMissionId)) {
       throw new BadRequestError('missionId를 확인해 주세요.');
@@ -18,8 +18,8 @@ class MissionsController extends Controller {
     return missionsService.challengeMission(parsedMissionId, memberId);
   }
 
-  async getMyInProgressMissions(query) {
-    const memberId = currentMemberId();
+  async getMyInProgressMissions(req, query) {
+    const memberId = currentMemberId(req);
     const options = getListOptions(query);
 
     if (!options) {
@@ -29,9 +29,9 @@ class MissionsController extends Controller {
     return missionsService.getInProgressMissions(memberId, options);
   }
 
-  async completeChallenge(missionId) {
+  async completeChallenge(req, missionId) {
     const parsedMissionId = Number(missionId);
-    const memberId = currentMemberId();
+    const memberId = currentMemberId(req);
 
     if (!isPositiveInt(parsedMissionId)) {
       throw new BadRequestError('missionId를 확인해 주세요.');

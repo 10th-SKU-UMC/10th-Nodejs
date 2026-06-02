@@ -16,6 +16,48 @@ export interface StoreResponse {
 }
 
 /**
+ * 회원 정보
+ */
+export interface MemberResponse {
+  /** 회원 ID */
+  id: number;
+
+  /** 회원 이름 */
+  name: string;
+
+  /** 회원 이메일 */
+  email?: string | null;
+
+  /** 회원 전화번호 */
+  phone?: string | null;
+
+  /** 회원 생일 */
+  birthday?: string | null;
+
+  /** 최초 가입 방식 */
+  authProvider: string;
+}
+
+/**
+ * 로그인 토큰 응답
+ */
+export interface AuthTokenResponse {
+  /** JWT Access Token */
+  accessToken: string;
+
+  /** 로그인한 회원 정보 */
+  member: MemberResponse;
+}
+
+/**
+ * Google 로그인 시작 응답
+ */
+export interface GoogleLoginStartResponse {
+  /** Google 로그인 페이지 이동 */
+  redirect: string;
+}
+
+/**
  * 미션 정보
  */
 export interface MissionResponse {

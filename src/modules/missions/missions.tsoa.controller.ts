@@ -1,4 +1,4 @@
-import { Controller, Patch, Path, Post, Response, Route, SuccessResponse, Tags } from 'tsoa';
+import { Controller, Patch, Path, Post, Response, Route, Security, SuccessResponse, Tags } from 'tsoa';
 import { ApiFailResponse, ApiSuccessResponse } from '../../common/swagger/api-response.dto';
 import { MemberMissionResponse } from '../../common/swagger/domain.dto';
 
@@ -9,8 +9,10 @@ export class MissionsTsoaController extends Controller {
    * 특정 미션 도전
    */
   @Post('{missionId}/challenges')
+  @Security('bearerAuth')
   @SuccessResponse('201', 'Created')
   @Response<ApiFailResponse>('400', 'missionId가 유효하지 않은 경우')
+  @Response<ApiFailResponse>('401', '로그인이 필요하거나 토큰이 유효하지 않은 경우')
   @Response<ApiFailResponse>('404', '존재하지 않는 미션인 경우')
   @Response<ApiFailResponse>('409', '이미 도전 중인 미션인 경우')
   public async challengeMission(
@@ -25,8 +27,10 @@ export class MissionsTsoaController extends Controller {
    * 진행 중인 미션 완료 처리
    */
   @Patch('{missionId}/challenges/complete')
+  @Security('bearerAuth')
   @SuccessResponse('200', 'OK')
   @Response<ApiFailResponse>('400', 'missionId가 유효하지 않은 경우')
+  @Response<ApiFailResponse>('401', '로그인이 필요하거나 토큰이 유효하지 않은 경우')
   @Response<ApiFailResponse>('404', '진행 중인 미션이 아닌 경우')
   public async completeChallenge(
     /** 미션 ID */

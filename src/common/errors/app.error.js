@@ -13,6 +13,12 @@ class BadRequestError extends AppError {
   }
 }
 
+class UnauthorizedError extends AppError {
+  constructor(message, data) {
+    super({ statusCode: 401, errorCode: 'UNAUTHORIZED', message, data });
+  }
+}
+
 class NotFoundError extends AppError {
   constructor(message, data) {
     super({ statusCode: 404, errorCode: 'NOT_FOUND', message, data });
@@ -28,6 +34,7 @@ class ConflictError extends AppError {
 module.exports = {
   AppError,
   BadRequestError,
+  UnauthorizedError,
   NotFoundError,
   ConflictError,
 };
