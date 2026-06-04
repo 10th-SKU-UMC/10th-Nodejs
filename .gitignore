@@ -1,4 +1,9 @@
-node_modules
-dist
-src
+# dependency directories
+node_modules/
+
+# dotenv environment variable files
 .env
+.env.*
+/src/generated/prisma
+
+/dist/swagger.json
